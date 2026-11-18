@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VegaAM — Skinned Companion</title>
+    <link rel="stylesheet" href="./styles/skin.css" />
+    <style id="theme-vars"></style>
+  </head>
+  <body data-theme="bluebird-classic" data-layout="bluebird-classic" data-mode="light">
+    <div class="skin-chassis">
+      <header class="skin-titlebar">
+        <div class="skin-brand">
+          <span class="skin-led" id="skin-led"></span>
+          <span id="skin-window-label">Bluebird Classic</span>
+        </div>
+        <div class="skin-toolbar">
+          <select id="skin-picker" aria-label="Select Companion Skin" title="Select Companion Skin"></select>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-mode"
+            title="Toggle Light / Dark Mode"
+          >
+            Light
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-pin"
+            title="Keep companion always on top"
+          >
+            Pin
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-activity"
+            title="Open Scrobble Monitor &amp; History"
+          >
+            Monitor
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-settings"
+            title="Open VegaAM Settings"
+          >
+            Settings
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-minimize"
+            title="Minimize"
+            aria-label="Minimize"
+          >
+            _
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-close"
+            title="Close Companion"
+            aria-label="Close Companion"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="skin-deck">
+        <!-- Hardware LCD / VFD Display Bezel -->
+        <section class="skin-bezel" aria-label="Hardware Readout">
+          <div class="readout-top">
+            <span class="readout-channel" id="skin-channel">SIRIUSXM OFFICIAL STREAM</span>
+            <span class="readout-clock" id="skin-timer">00:00 / 02:30</span>
+          </div>
+          <div class="readout-main" id="skin-readout-title">Waiting for SiriusXM…</div>
+          <div class="readout-sub" id="skin-readout-artist">
+            Play any station in the official SiriusXM window
+          </div>
+          <div class="meter-strip" aria-hidden="true">
+            <div class="meter-bar" id="skin-meter-fill" style="width: 0%"></div>
+          </div>
+        </section>
+
+        <!-- Artwork & Track Stage -->
+        <section class="skin-stage">
+          <div class="skin-artwork-frame">
+            <img id="skin-artwork" class="skin-artwork" alt="" hidden />
+            <div id="skin-artwork-fallback" class="skin-artwork-fallback">
+              <div class="fallback-dial"></div>
+              <span id="skin-fallback-code">SXM</span>
+            </div>
+          </div>
+
+          <div class="skin-track-details">
+            <div class="skin-programme" id="skin-programme">Official SiriusXM Player</div>
+            <h1 class="skin-track-title" id="skin-title">Waiting for SiriusXM…</h1>
+            <div class="skin-track-artist" id="skin-artist">Start playback in the main window</div>
+            <div class="skin-concert" id="skin-concert" hidden></div>
+          </div>
+        </section>
+
+        <!-- Scrobble Status Strip -->
+        <section class="skin-scrobble-strip">
+          <div class="scrobble-info">
+            <span class="scrobble-badge" id="skin-scrobble-badge">Waiting</span>
+            <span class="scrobble-reason" id="skin-scrobble-reason">
+              150s listening threshold required
+            </span>
+          </div>
+          <button
+            type="button"
+            class="toolbar-btn"
+            id="btn-skin-mute-scrobble"
+            hidden
+          >
+            Mute Scrobbling
+          </button>
+        </section>
+
+        <!-- Capability-Gated Transport Deck -->
+        <footer class="skin-transport" role="group" aria-label="Companion transport">
+          <div class="transport-os-buttons">
+            <button
+              type="button"
+              class="transport-btn"
+              id="btn-skin-prev"
+              title="Previous"
+              hidden
+            >
+              ⏮ Prev
+            </button>
+            <button
+              type="button"
+              class="transport-btn transport-primary"
+              id="btn-skin-play"
+              title="Play / Pause"
+              hidden
+            >
+              ⏯ Play / Pause
+            </button>
+            <button
+              type="button"
+              class="transport-btn"
+              id="btn-skin-next"
+              title="Next"
+              hidden
+            >
+              ⏭ Next
+            </button>
+          </div>
+
+          <div class="transport-core-buttons">
+            <button
+              type="button"
+              class="transport-btn"
+              id="btn-skin-mute"
+              title="Mute / Unmute Official Player Audio"
+            >
+              Mute Audio
+            </button>
+            <button
+              type="button"
+              class="transport-btn transport-primary"
+              id="btn-skin-official"
+              title="Bring the official SiriusXM player window to the front"
+            >
+              Return to Official Player
+            </button>
+          </div>
+        </footer>
+      </main>
+    </div>
+    <script src="./skin.js"></script>
+  </body>
+</html>

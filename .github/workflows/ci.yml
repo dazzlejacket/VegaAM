@@ -1,0 +1,247 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+# Cancel superseded runs for the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A published repository must never carry credentials. This job fails
+      # the build if a local credential file or an obvious Last.fm key pair
+      # was committed by accident.
+      - name: No committed credentials
+        run: |
+          set -euo pipefail
+          fail=0
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is committed. Remove it and rotate the credentials."
+            fail=1
+          fi
+          if git ls-files | grep -E '\.env(\.local|\..*\.local)?$'; then
+            echo "::error::A local credential file is committed."
+            fail=1
+          fi
+          if git ls-files -z | xargs -0 grep -lE 'VEGAAM_LASTFM_API_SECRET=[^[:space:]]+' 2>/dev/null; then
+            echo "::error::A Last.fm shared secret appears to be committed."
+            fail=1
+          fi
+          exit "$fail"
+
+      # The export must not carry build output, dependencies or caches.
+      - name: No build output or dependencies committed
+        run: |
+          set -euo pipefail
+          fail=0
+          for path in node_modules dist release artifacts; do
+            if git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
+              echo "::error::${path} is tracked in git."
+              fail=1
+            fi
+          done
+          exit "$fail"
+
+  build:
+    name: Build and test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build bundles and icons
+        run: npm run build
+
+      - name: Verify icons
+        run: npm run verify:icons
+
+      - name: Upload built app
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  test-macos:
+    name: Shared logic on macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The shared business logic (Last.fm client, settings, credential
+      # storage classification, scrobble policy) has to behave identically on
+      # every platform - this job proves it on macOS.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build bundles and icons
+        run: npm run build
+
+  package-windows:
+    name: Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `dist/` is gitignored, so the bundles and the generated icons
+      # (build/icon.ico) have to exist before electron-builder packages them.
+      - name: Build bundles and icons
+        run: npm run build
+
+      - name: Package NSIS installers
+        run: npx electron-builder --win --publish never
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: release/*.exe
+          if-no-files-found: error
+
+  package-macos:
+    name: macOS installer
+    # macOS packages can only be produced on a macOS runner.
+    runs-on: macos-latest
+    env:
+      # Unsigned build: no signing identity is available on the runner.
+      # NOTE: do NOT set CSC_LINK to an empty string. electron-builder treats
+      # any non-null CSC_LINK as a certificate file path, resolves "" against
+      # the project directory and fails with "<project dir> not a file".
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Also generates build/icon.icns, which electron-builder requires for macOS.
+      - name: Build bundles and icons
+        run: npm run build
+
+      - name: Package DMG and ZIP
+        run: npx electron-builder --mac --publish never
+
+      # The Keychain behaviour of `safeStorage` depends on a *stable* code
+      # signature. This step reports the signature state so a regression is
+      # visible in the log. The signed release is produced by release.yml.
+      - name: Report the signature and bundle identity
+        run: |
+          set -u
+          APP="$(find release/mac* -maxdepth 1 -name '*.app' | head -1)"
+          echo "application: ${APP}"
+          if [ -n "${APP}" ]; then
+            codesign -dv --verbose=2 "${APP}" 2>&1 | tee mac-signature.txt || true
+            codesign -d --entitlements - "${APP}" 2>&1 | head -40 || true
+            /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${APP}/Contents/Info.plist" \
+              | tee mac-bundle-id.txt
+          fi
+
+      - name: Upload signature report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-signature-report
+          path: |
+            release/mac*/mac-signature.txt
+            release/mac*/mac-bundle-id.txt
+          if-no-files-found: ignore
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+  package-linux:
+    name: Linux packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install rpmbuild (needed by the rpm target)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build bundles and icons
+        run: npm run build
+
+      - name: Package AppImage, deb and rpm
+        run: npx electron-builder --linux --publish never
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            release/*.AppImage
+            release/*.deb
+            release/*.rpm
+          if-no-files-found: error

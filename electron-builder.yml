@@ -1,0 +1,106 @@
+# Build configuration for electron-builder.
+# https://www.electron.build/configuration/configuration
+
+appId: app.vegaam.desktop
+productName: VegaAM
+copyright: VegaAM contributors
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - package.json
+
+npmRebuild: false
+
+extraMetadata:
+  main: dist/main/main.js
+
+asar: true
+
+# Windows ------------------------------------------------------------------
+win:
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+  icon: build/icon.ico
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: VegaAM
+  deleteAppDataOnUninstall: false
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  include: build/installer.nsh
+
+# macOS --------------------------------------------------------------------
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+  category: public.app-category.music
+  icon: build/icon.icns
+  # The Chromium JIT entitlements the hardened runtime needs.
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # The bundle identifier comes from `appId` (app.vegaam.desktop) and must
+  # never change: macOS derives the Keychain access rules of the
+  # "VegaAM Safe Storage" item from the signature and the bundle identifier.
+  # See docs/MACOS_KEYCHAIN.md.
+  #
+  # Notarization runs automatically as soon as the Apple credentials are in
+  # the environment (APPLE_API_KEY / APPLE_ID / APPLE_KEYCHAIN). See
+  # .github/workflows/release.yml.
+  extendInfo:
+    NSMicrophoneUsageDescription: Not used by this application.
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Linux --------------------------------------------------------------------
+linux:
+  target:
+    - target: AppImage
+      arch: [x64, arm64]
+    - target: deb
+      arch: [x64]
+    - target: rpm
+      arch: [x64]
+  category: AudioVideo
+  icon: build/icon.png
+  synopsis: Desktop player for SiriusXM with surface themes, skins and scrobbling
+  desktop:
+    entry:
+      Name: VegaAM
+      Categories: AudioVideo;Audio;Player;Music;
+
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libsecret-1-0
+
+appImage:
+  artifactName: ${productName}-${version}-${arch}.${ext}

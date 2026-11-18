@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:;"
+    />
+    <title>VegaAM</title>
+    <link rel="stylesheet" href="../styles/quick.css" />
+  </head>
+  <body data-drawer-state="collapsed" data-mode="dark" data-active-tab="appearance">
+    <!-- State 1: Compact In-Window Top-Right Launcher Pill (128x38) -->
+    <button
+      class="launcher-pill"
+      id="launcher-pill"
+      type="button"
+      aria-label="Open VegaAM Appearance and Settings (Ctrl+,)"
+      title="Open VegaAM Appearance, Activity & Settings (Ctrl+,)"
+    >
+      <svg class="pill-mark" viewBox="0 0 40 40" width="22" height="22" aria-hidden="true">
+        <defs>
+          <linearGradient id="pill-vg" x1="6" y1="34" x2="34" y2="6" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#5B8CFF" />
+            <stop offset="1" stop-color="#A371F7" />
+          </linearGradient>
+        </defs>
+        <rect
+          x="1.5"
+          y="1.5"
+          width="37"
+          height="37"
+          rx="11"
+          fill="#0B1020"
+          stroke="rgba(255,255,255,0.22)"
+          stroke-width="1.5"
+        />
+        <path
+          d="M11.4 11.4 20.2 29.4 28.6 11.4"
+          fill="none"
+          stroke="url(#pill-vg)"
+          stroke-width="5.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M30.2 5.4l0.6 3.1 2.1 0.9-2.1 0.9-0.6 3.1-0.6-3.1-2.1-0.9 2.1-0.9 0.6-3.1Z"
+          fill="#FFD21A"
+        />
+      </svg>
+      <span class="pill-label">VegaAM</span>
+      <span class="pill-dot" id="pill-dot" aria-hidden="true"></span>
+    </button>
+
+    <!-- State 2: Integrated In-Window Drawer (Appears inside mainWindow) -->
+    <div
+      class="drawer-shell"
+      id="drawer-shell"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="drawer-title"
+      hidden
+    >
+      <!-- Left Navigation Rail -->
+      <aside class="drawer-rail" aria-label="VegaAM Navigation">
+        <div class="rail-brand">
+          <svg class="rail-logo" viewBox="0 0 40 40" width="32" height="32" aria-hidden="true">
+            <defs>
+              <linearGradient id="rail-vg" x1="6" y1="34" x2="34" y2="6" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#5B8CFF" />
+                <stop offset="1" stop-color="#A371F7" />
+              </linearGradient>
+            </defs>
+            <rect
+              x="1"
+              y="1"
+              width="38"
+              height="38"
+              rx="11"
+              fill="#0B1020"
+              stroke="rgba(255,255,255,0.18)"
+            />
+            <path
+              d="M11.4 11.4 20.2 29.4 28.6 11.4"
+              fill="none"
+              stroke="url(#rail-vg)"
+              stroke-width="5.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M30.2 5.4l0.6 3.1 2.1 0.9-2.1 0.9-0.6 3.1-0.6-3.1-2.1-0.9 2.1-0.9 0.6-3.1Z"
+              fill="#FFD21A"
+            />
+          </svg>
+          <div class="rail-brand-text">
+            <strong>VegaAM</strong>
+            <span>v3.2 Studio</span>
+          </div>
+        </div>
+
+        <nav class="rail-nav" id="rail-nav" role="tablist" aria-label="Settings and Activity sections">
+          <button
+            class="rail-tab"
+            id="nav-appearance"
+            data-tab="appearance"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tab-appearance"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">✦</span>
+            <span class="rail-tab-label">Appearance</span>
+            <span class="rail-badge" id="badge-themes">14</span>
+          </button>
+
+          <button
+            class="rail-tab"
+            id="nav-activity"
+            data-tab="activity"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-activity"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">◉</span>
+            <span class="rail-tab-label">Activity</span>
+            <span class="rail-badge" id="badge-history">0</span>
+          </button>
+
+          <button
+            class="rail-tab"
+            id="nav-scrobbling"
+            data-tab="scrobbling"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-scrobbling"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">⚙</span>
+            <span class="rail-tab-label">Scrobbling</span>
+          </button>
+
+          <button
+            class="rail-tab"
+            id="nav-accounts"
+            data-tab="accounts"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-accounts"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">🔑</span>
+            <span class="rail-tab-label">Accounts</span>
+            <span class="rail-status-dot" id="badge-accounts-dot" aria-hidden="true"></span>
+          </button>
+
+          <button
+            class="rail-tab"
+            id="nav-companions"
+            data-tab="companions"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-companions"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">▣</span>
+            <span class="rail-tab-label">Companions</span>
+          </button>
+
+          <button
+            class="rail-tab"
+            id="nav-about"
+            data-tab="about"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-about"
+            type="button"
+          >
+            <span class="rail-icon" aria-hidden="true">ℹ</span>
+            <span class="rail-tab-label">About &amp; Help</span>
+          </button>
+        </nav>
+
+        <div class="rail-now-playing" id="rail-now-playing" title="Click to view live Scrobble Activity">
+          <div class="rail-np-top">
+            <span class="rail-np-dot" id="rail-np-dot"></span>
+            <span class="rail-np-channel" id="rail-np-channel">SiriusXM Ready</span>
+          </div>
+          <div class="rail-np-track" id="rail-np-track">Listening for track…</div>
+          <div class="rail-np-artist" id="rail-np-artist">Official Player</div>
+          <div class="rail-np-bar">
+            <div class="rail-np-bar-fill" id="rail-np-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Workspace Area -->
+      <div class="drawer-workspace">
+        <header class="drawer-header">
+          <div class="drawer-header-titles">
+            <h1 id="drawer-title">Appearance</h1>
+            <p id="drawer-subtitle">
+              Live SiriusXM light &amp; dark surface themes — zero popups, uninterrupted audio
+            </p>
+          </div>
+          <div class="drawer-header-actions">
+            <span class="active-theme-pill" id="header-theme-pill">Official</span>
+            <button
+              class="btn btn-subtle btn-sm"
+              id="header-reset-btn"
+              type="button"
+              title="Restore stock SiriusXM appearance immediately"
+            >
+              Reset to Official
+            </button>
+            <button
+              class="close-btn"
+              id="drawer-close-btn"
+              type="button"
+              aria-label="Close panel (Escape)"
+              title="Close drawer (Esc)"
+            >
+              ×
+            </button>
+          </div>
+        </header>
+
+        <main class="drawer-content" id="drawer-content">
+          <!-- TAB 1: APPEARANCE -->
+          <section
+            class="tab-pane"
+            id="tab-appearance"
+            role="tabpanel"
+            aria-labelledby="nav-appearance"
+          >
+            <!-- Category Filter & Quick Status -->
+            <div class="appearance-toolbar">
+              <div class="segmented" role="group" aria-label="Filter themes by mode">
+                <button
+                  class="seg-btn active"
+                  id="filter-all"
+                  data-filter="all"
+                  type="button"
+                >
+                  All (14)
+                </button>
+                <button
+                  class="seg-btn"
+                  id="filter-light"
+                  data-filter="light"
+                  type="button"
+                >
+                  ☀ Light (5)
+                </button>
+                <button
+                  class="seg-btn"
+                  id="filter-dark"
+                  data-filter="dark"
+                  type="button"
+                >
+                  ☾ Dark (9)
+                </button>
+              </div>
+
+              <div class="ui-mode-inline" role="group" aria-label="Drawer UI mode">
+                <span class="ui-mode-label">Panel UI:</span>
+                <button class="chip-btn" id="ui-mode-dark" data-ui-mode="dark" type="button">
+                  Dark
+                </button>
+                <button class="chip-btn" id="ui-mode-light" data-ui-mode="light" type="button">
+                  Light
+                </button>
+                <button class="chip-btn" id="ui-mode-system" data-ui-mode="system" type="button">
+                  Auto
+                </button>
+              </div>
+            </div>
+
+            <!-- Stock Official SiriusXM Card -->
+            <button
+              class="official-banner-card"
+              id="official-theme-card"
+              data-theme-id="official"
+              type="button"
+              aria-pressed="true"
+            >
+              <div class="official-preview" aria-hidden="true">
+                <div class="op-sidebar"></div>
+                <div class="op-body">
+                  <div class="op-row">
+                    <span class="op-tile"></span>
+                    <span class="op-tile"></span>
+                  </div>
+                  <div class="op-bar"></div>
+                </div>
+              </div>
+              <div class="official-info">
+                <div class="official-title-row">
+                  <strong>Official SiriusXM (Stock)</strong>
+                  <span class="mode-tag stock">STOCK</span>
+                </div>
+                <p>Original unstyled SiriusXM web player with zero CSS overrides.</p>
+              </div>
+              <span class="theme-check" aria-hidden="true">✓</span>
+            </button>
+
+            <!-- Visual Theme Preview Grid -->
+            <div class="theme-preview-grid" id="surface-theme-grid"></div>
+
+            <!-- Custom Accent Colour Studio -->
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Custom Accent Override</h2>
+                  <p>
+                    Recolour the play button, progress bar, focus rings, and active highlights on
+                    any theme.
+                  </p>
+                </div>
+                <button class="btn btn-subtle btn-sm" id="accent-reset-btn" type="button">
+                  Theme Default
+                </button>
+              </div>
+
+              <div class="accent-controls-row">
+                <input
+                  type="color"
+                  id="accent-color-picker"
+                  class="color-Well"
+                  value="#5B8CFF"
+                  aria-label="Pick custom accent color"
+                />
+                <input
+                  type="text"
+                  id="accent-hex-input"
+                  class="input-text hex-input"
+                  placeholder="#5B8CFF"
+                  maxlength="7"
+                  aria-label="Custom accent hex color"
+                />
+                <button class="btn btn-primary btn-sm" id="accent-apply-btn" type="button">
+                  Apply Accent
+                </button>
+              </div>
+
+              <div class="accent-swatches" id="accent-preset-swatches" aria-label="Preset accents">
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#5B8CFF"
+                  style="background: #5B8CFF"
+                  title="Vega Blue (#5B8CFF)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#2563EB"
+                  style="background: #2563EB"
+                  title="Royal Daylight Blue (#2563EB)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#7828C8"
+                  style="background: #7828C8"
+                  title="Catppuccin Latte Mauve (#7828C8)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#CBA6F7"
+                  style="background: #CBA6F7"
+                  title="Catppuccin Mocha Mauve (#CBA6F7)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#2AA198"
+                  style="background: #2AA198"
+                  title="Solarized Teal (#2AA198)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#FE8019"
+                  style="background: #FE8019"
+                  title="Gruvbox Orange (#FE8019)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#EB6F92"
+                  style="background: #EB6F92"
+                  title="Rosé Pine Love (#EB6F92)"
+                ></button>
+                <button
+                  type="button"
+                  class="accent-dot"
+                  data-accent="#10B981"
+                  style="background: #10B981"
+                  title="Emerald (#10B981)"
+                ></button>
+              </div>
+            </div>
+
+            <!-- Unobtrusive 1-Line Opt-In Notice -->
+            <div class="inline-disclosure">
+              <span>
+                <strong>Local CSS overrides:</strong> Themes recolour SiriusXM's 1,288
+                <code>--color-*</code> tokens without touching login, billing, DRM, or playback.
+              </span>
+              <div class="inline-disclosure-links">
+                <button class="link-btn" id="link-about-disclosure" type="button">
+                  Details &amp; Help
+                </button>
+                <button class="link-btn danger" id="btn-disable-themes" type="button">
+                  Disable Themes
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 2: ACTIVITY & HISTORY -->
+          <section
+            class="tab-pane"
+            id="tab-activity"
+            role="tabpanel"
+            aria-labelledby="nav-activity"
+            hidden
+          >
+            <!-- Live Now Playing & Scrobble Monitor -->
+            <div class="studio-card monitor-hero">
+              <div class="monitor-top">
+                <div class="monitor-art" id="act-art">♫</div>
+                <div class="monitor-meta">
+                  <div class="monitor-badges">
+                    <span class="badge accent" id="act-channel">No active channel</span>
+                    <span class="badge" id="act-state-badge">Idle</span>
+                  </div>
+                  <h2 id="act-title">Waiting for SiriusXM playback…</h2>
+                  <p class="monitor-artist" id="act-artist">
+                    Start playing any channel on the SiriusXM player to track and scrobble songs.
+                  </p>
+                </div>
+                <div class="monitor-actions">
+                  <button class="btn btn-subtle btn-sm" id="act-mute-channel-btn" type="button">
+                    Mute Channel
+                  </button>
+                </div>
+              </div>
+
+              <div class="monitor-progress-wrap">
+                <div class="monitor-progress-labels">
+                  <span id="act-elapsed-label">0s listened</span>
+                  <span id="act-threshold-label">150s radio scrobble threshold</span>
+                </div>
+                <div class="monitor-progress-track">
+                  <div class="monitor-progress-fill" id="act-progress-fill" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="monitor-grid">
+                <div class="kv-box">
+                  <span class="kv-label">Eligibility</span>
+                  <strong id="act-eligibility">—</strong>
+                </div>
+                <div class="kv-box">
+                  <span class="kv-label">Now Playing API</span>
+                  <strong id="act-now-playing">—</strong>
+                </div>
+                <div class="kv-box">
+                  <span class="kv-label">Metadata Source</span>
+                  <strong id="act-source">Official MediaSession</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- History & Queue Sub-Switch -->
+            <div class="subtab-bar">
+              <div class="segmented" role="group" aria-label="History or Queue">
+                <button class="seg-btn active" id="subtab-history-btn" type="button">
+                  Scrobble History (<span id="history-count-inline">0</span>)
+                </button>
+                <button class="seg-btn" id="subtab-queue-btn" type="button">
+                  Retry Queue (<span id="queue-count-inline">0</span>)
+                </button>
+              </div>
+              <div class="subtab-actions">
+                <input
+                  type="search"
+                  id="history-search"
+                  class="input-text input-sm"
+                  placeholder="Filter tracks or artists…"
+                  aria-label="Filter history"
+                />
+                <button class="btn btn-subtle btn-sm" id="history-refresh-btn" type="button">
+                  Refresh
+                </button>
+                <button class="btn btn-subtle btn-sm danger-text" id="history-clear-btn" type="button">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div id="history-view-container" class="history-list"></div>
+            <div id="queue-view-container" class="history-list" hidden></div>
+          </section>
+
+          <!-- TAB 3: SCROBBLING RULES -->
+          <section
+            class="tab-pane"
+            id="tab-scrobbling"
+            role="tabpanel"
+            aria-labelledby="nav-scrobbling"
+            hidden
+          >
+            <div class="studio-card">
+              <h2>Metadata &amp; Scrobble Rules</h2>
+              <p class="card-desc">
+                Control how SiriusXM broadcast metadata is cleaned and verified before scrobbling.
+              </p>
+
+              <div class="form-row">
+                <label for="rule-concert-select">Concert date/venue in scrobble title</label>
+                <select id="rule-concert-select" class="input-select">
+                  <option value="always">Always include concert info</option>
+                  <option value="when-known">Only when venue &amp; date are verified</option>
+                  <option value="never">Strip concert suffixes</option>
+                </select>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="rule-featured-checkbox" />
+                <span>Include featured artists (<code>feat.</code> / <code>with</code>) in artist field</span>
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="rule-verified-checkbox" />
+                <span>Require strict song/artist verification before scrobbling</span>
+              </label>
+            </div>
+
+            <div class="studio-card">
+              <h2>Scrobble Threshold</h2>
+              <p class="card-desc">
+                SiriusXM never publishes a track duration. VegaAM measures the songs it hears
+                end&#8209;to&#8209;end on the channel and requires half of a song before it is
+                submitted. A song that ends while it is still shorter than the threshold is
+                submitted as well, so short songs are never lost.
+              </p>
+
+              <div class="form-row">
+                <span class="form-label">Threshold in force</span>
+                <span class="badge" id="scrobble-threshold-badge">90s &middot; adaptive</span>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="rule-adaptive-checkbox" checked />
+                <span>
+                  Adapt the threshold to the song length of the channel
+                  <em id="scrobble-adaptive-hint"></em>
+                </span>
+              </label>
+            </div>
+
+            <div class="studio-card">
+              <h2>Scrobble-Muted Channels</h2>
+              <p class="card-desc">
+                Tracks played on muted channels (e.g. talk, news, comedy, or ambient) will not be
+                scrobbled.
+              </p>
+              <div class="inline-form">
+                <input
+                  type="text"
+                  id="mute-channel-input"
+                  class="input-text"
+                  placeholder="Channel name (e.g. Howard 100)"
+                />
+                <button class="btn btn-primary btn-sm" id="mute-channel-add-btn" type="button">
+                  Mute Channel
+                </button>
+              </div>
+              <div class="chip-cloud" id="muted-channels-list"></div>
+            </div>
+
+            <div class="studio-card">
+              <h2>Single-Artist Channel Mappings</h2>
+              <p class="card-desc">
+                Map dedicated artist channels (e.g. <code>E Street Radio → Bruce Springsteen</code>)
+                for broadcasts that omit the artist field.
+              </p>
+              <div class="inline-form">
+                <input
+                  type="text"
+                  id="map-channel-input"
+                  class="input-text"
+                  placeholder="Channel name"
+                />
+                <input
+                  type="text"
+                  id="map-artist-input"
+                  class="input-text"
+                  placeholder="Default artist"
+                />
+                <button class="btn btn-primary btn-sm" id="map-add-btn" type="button">
+                  Add
+                </button>
+              </div>
+              <div class="rule-list" id="channel-mappings-list"></div>
+            </div>
+
+            <div class="studio-card">
+              <h2>Manual Track Corrections</h2>
+              <p class="card-desc">
+                Override mislabelled SiriusXM broadcast strings whenever they air again.
+              </p>
+              <div class="grid-2col">
+                <input
+                  type="text"
+                  id="corr-raw-artist"
+                  class="input-text"
+                  placeholder="Broadcast artist"
+                />
+                <input
+                  type="text"
+                  id="corr-raw-title"
+                  class="input-text"
+                  placeholder="Broadcast title"
+                />
+                <input
+                  type="text"
+                  id="corr-new-artist"
+                  class="input-text"
+                  placeholder="Corrected artist"
+                />
+                <input
+                  type="text"
+                  id="corr-new-title"
+                  class="input-text"
+                  placeholder="Corrected title"
+                />
+              </div>
+              <div class="card-actions-right">
+                <button class="btn btn-primary btn-sm" id="corr-save-btn" type="button">
+                  Save Correction
+                </button>
+              </div>
+              <div class="rule-list" id="manual-corrections-list"></div>
+            </div>
+          </section>
+
+          <!-- TAB 4: ACCOUNTS -->
+          <section
+            class="tab-pane"
+            id="tab-accounts"
+            role="tabpanel"
+            aria-labelledby="nav-accounts"
+            hidden
+          >
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Official SiriusXM Session</h2>
+                  <p>
+                    Authenticated directly with SiriusXM inside the isolated
+                    <code>persist:siriusxm</code> partition.
+                  </p>
+                </div>
+                <span class="badge ok" id="acc-sxm-badge">Connected</span>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="acc-media-bridge-checkbox" checked />
+                <span>
+                  Enable read-only <code>navigator.mediaSession</code> bridge for scrobbling &amp;
+                  companion displays
+                </span>
+              </label>
+
+              <div class="btn-row">
+                <button class="btn btn-subtle btn-sm" id="acc-sxm-reload-btn" type="button">
+                  Reload SiriusXM Player
+                </button>
+                <button class="btn btn-subtle btn-sm danger-text" id="acc-sxm-clear-btn" type="button">
+                  Clear Session / Sign Out
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>ListenBrainz</h2>
+                  <p>Open-source scrobbling via your ListenBrainz user token.</p>
+                </div>
+                <span class="badge" id="acc-lb-badge">Not configured</span>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="acc-lb-enabled" />
+                <span>Scrobble tracks &amp; Now Playing to ListenBrainz</span>
+              </label>
+
+              <div class="inline-form">
+                <input
+                  type="password"
+                  id="acc-lb-token"
+                  class="input-text"
+                  placeholder="Paste ListenBrainz user token"
+                />
+                <button class="btn btn-primary btn-sm" id="acc-lb-save-btn" type="button">
+                  Connect &amp; Verify
+                </button>
+                <button class="btn btn-subtle btn-sm" id="acc-lb-disconnect-btn" type="button">
+                  Disconnect
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-card" id="acc-lfm-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Last.fm</h2>
+                  <p>
+                    Scrobble every track to your Last.fm profile. VegaAM ships with the
+                    application credentials, so there is nothing to paste in.
+                  </p>
+                </div>
+                <span class="badge" id="acc-lfm-badge">Not connected</span>
+              </div>
+
+              <div class="account-line" id="acc-lfm-account" hidden>
+                <span class="account-line-label">Connected as</span>
+                <strong class="account-line-name" id="acc-lfm-username">&mdash;</strong>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="acc-lfm-enabled" />
+                <span>Scrobble tracks &amp; Now Playing to Last.fm</span>
+              </label>
+
+              <div class="btn-row">
+                <button class="btn btn-primary" id="acc-lfm-connect-btn" type="button">
+                  Connect Last.fm
+                </button>
+                <button class="btn btn-subtle" id="acc-lfm-disconnect-btn" type="button">
+                  Disconnect
+                </button>
+                <button class="btn btn-subtle" id="acc-test-services-btn" type="button">
+                  Verify Connections
+                </button>
+              </div>
+
+              <p class="field-hint" id="acc-lfm-hint"></p>
+
+              <button class="link-btn" id="acc-lfm-auth-link" type="button" hidden>
+                Open the Last.fm authorization page again
+              </button>
+
+              <details class="disclosure" id="acc-lfm-advanced">
+                <summary>Use my own Last.fm API key</summary>
+                <p class="field-hint">
+                  Only needed when you want to scrobble with a different Last.fm
+                  application. The shared secret is stored in your operating system
+                  keychain, never in the settings file.
+                </p>
+                <div class="grid-2col">
+                  <input
+                    type="text"
+                    id="acc-lfm-key"
+                    class="input-text"
+                    placeholder="Last.fm API Key"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <input
+                    type="password"
+                    id="acc-lfm-secret"
+                    class="input-text"
+                    placeholder="Last.fm Shared Secret"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="btn-row">
+                  <button class="btn btn-subtle btn-sm" id="acc-lfm-save-btn" type="button">
+                    Save credentials
+                  </button>
+                </div>
+              </details>
+            </div>
+          </section>
+
+          <!-- TAB 5: COMPANIONS & DESKTOP -->
+          <section
+            class="tab-pane"
+            id="tab-companions"
+            role="tabpanel"
+            aria-labelledby="nav-companions"
+            hidden
+          >
+            <div class="studio-card">
+              <h2>Optional Companion Windows</h2>
+              <p class="card-desc">
+                Normal VegaAM navigation stays inside this main window. You can optionally open a
+                separate floating mini-player or vintage hardware companion window when desired.
+              </p>
+
+              <div class="companion-grid">
+                <button class="companion-card" id="comp-open-compact" type="button">
+                  <strong>Compact Mini-Player</strong>
+                  <span>480×152 desktop bar</span>
+                </button>
+                <button class="companion-card" data-skin="bluebird-classic" type="button">
+                  <strong>Bluebird Classic</strong>
+                  <span>Light/dark desktop receiver</span>
+                </button>
+                <button class="companion-card" data-skin="retro-amp" type="button">
+                  <strong>Retro Amp</strong>
+                  <span>LED segment rack deck</span>
+                </button>
+                <button class="companion-card" data-skin="modern" type="button">
+                  <strong>Modern Studio</strong>
+                  <span>Glass album companion</span>
+                </button>
+                <button class="companion-card" data-skin="retro-satellite" type="button">
+                  <strong>Retro Satellite</strong>
+                  <span>2000s satellite tuner</span>
+                </button>
+                <button class="companion-card" data-skin="classic-compact" type="button">
+                  <strong>Classic Compact</strong>
+                  <span>Minimal OLED readout</span>
+                </button>
+              </div>
+
+              <div class="btn-row" style="margin-top: 10px">
+                <button class="btn btn-subtle btn-sm" id="comp-import-json-btn" type="button">
+                  Import Companion Theme JSON…
+                </button>
+                <button class="btn btn-subtle btn-sm" id="comp-export-json-btn" type="button">
+                  Export Companion Theme JSON…
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <h2>Desktop &amp; Window Behaviour</h2>
+              <label class="toggle-row">
+                <input type="checkbox" id="desk-close-tray" />
+                <span>Minimize to system tray when closing the main window</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="desk-always-top" />
+                <span>Keep optional companion windows always on top</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="desk-notify-track" />
+                <span>Show desktop notification when a new song begins</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="desk-notify-scrobble" />
+                <span>Show desktop notification when a song is scrobbled</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="desk-start-login" />
+                <span>Start VegaAM automatically when signing into Windows</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- TAB 6: ABOUT & HELP -->
+          <section
+            class="tab-pane"
+            id="tab-about"
+            role="tabpanel"
+            aria-labelledby="nav-about"
+            hidden
+          >
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Unofficial project notice</h2>
+                  <p>
+                    VegaAM is an independent, community-driven open-source project. It is
+                    <strong>not affiliated with, endorsed by or sponsored by Sirius XM Holdings
+                    Inc.</strong> SiriusXM, Sirius XM and all related trademarks belong to their
+                    respective owners and are used here only to identify the service this app works
+                    with. Every theme, skin and icon shipped with VegaAM is original VegaAM artwork.
+                  </p>
+                </div>
+                <span class="badge accent">Unofficial</span>
+              </div>
+              <ul class="about-list">
+                <li>
+                  <strong>You need your own legitimate SiriusXM subscription.</strong> VegaAM does
+                  not provide SiriusXM access and ships no content of any kind.
+                </li>
+                <li>
+                  <strong>No DRM bypass, no audio capture, no redistribution.</strong> VegaAM never
+                  decrypts, records, proxies or re-streams audio, never calls unofficial SiriusXM
+                  APIs and never blocks or alters the official player's requests.
+                </li>
+                <li>
+                  <strong>The official player owns everything.</strong> Sign-in, subscription checks,
+                  the channel guide, search, favourites and protected media stay 100 % inside the
+                  official SiriusXM page that VegaAM hosts.
+                </li>
+              </ul>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>VegaAM 3.2.3 — Unofficial SiriusXM Desktop Companion</h2>
+                  <p>
+                    Single-window integrated workspace with real light &amp; dark surface themes,
+                    verified scrobbling, and zero popup clutter.
+                  </p>
+                </div>
+                <span class="badge accent">v3.2.3</span>
+              </div>
+
+              <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                  <kbd>Ctrl+,</kbd>
+                  <span>Toggle integrated Settings &amp; Appearance drawer</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>Ctrl+Shift+A</kbd>
+                  <span>Open Scrobble Activity &amp; History tab</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>Esc</kbd>
+                  <span>Collapse drawer &amp; return focus to SiriusXM</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>Ctrl+M</kbd>
+                  <span>Mute / Unmute official SiriusXM player</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <h2>Surface Theme Technical &amp; Contractual Information</h2>
+              <p class="card-desc">
+                VegaAM surface themes are an optional, local appearance customization (disabled by
+                default until you select a theme).
+              </p>
+              <ul class="about-list">
+                <li>
+                  <strong>How it works:</strong> Uses Electron's
+                  <code>webContents.insertCSS(css, { cssOrigin: 'user' })</code> and
+                  <code>removeInsertedCSS(key)</code> to remap SiriusXM's 1,288
+                  <code>--color-*</code> design tokens.
+                </li>
+                <li>
+                  <strong>What is never touched:</strong> Zero DOM scripts or navigation elements
+                  are injected into the SiriusXM page. Login, account, billing, and checkout routes
+                  automatically pause custom themes. Audio streams, Widevine DRM, and network
+                  requests are completely unmodified.
+                </li>
+                <li>
+                  <strong>Instant reset:</strong> Click <strong>Reset to Official</strong> in the
+                  header at any time to immediately remove all injected CSS without reloading or
+                  interrupting playback.
+                </li>
+              </ul>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Windows V-Star Icon Identity &amp; Legacy Cleanup</h2>
+                  <p>
+                    AppUserModelID: <code>app.vegaam.desktop</code> &mdash; the taskbar icon is
+                    repaired automatically at start-up. A shortcut that claims this identity while
+                    pointing at an Electron binary is removed, because Windows would otherwise
+                    draw the stock nucleus instead of the V-star.
+                  </p>
+                </div>
+                <span class="badge ok" id="about-icon-badge">Verified</span>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-subtle btn-sm" id="about-clean-shortcuts-btn" type="button">
+                  Clean Legacy Shortcuts
+                </button>
+                <button class="btn btn-subtle btn-sm" id="about-refresh-icons-btn" type="button">
+                  Refresh Windows Icon Cache
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Credential Protection</h2>
+                  <p>Where the Last.fm session and the ListenBrainz token are stored.</p>
+                </div>
+                <span class="badge" id="about-credentials-badge">Checking…</span>
+              </div>
+              <p class="field-hint" id="about-credentials-detail"></p>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <div>
+                  <h2>Surface Theme Engine Diagnostics</h2>
+                  <p>Token snapshot &amp; runtime state for troubleshooting.</p>
+                </div>
+                <div class="btn-row">
+                  <button class="btn btn-subtle btn-sm" id="about-refresh-diag-btn" type="button">
+                    Refresh
+                  </button>
+                  <button class="btn btn-primary btn-sm" id="about-copy-diag-btn" type="button">
+                    Copy JSON
+                  </button>
+                </div>
+              </div>
+              <pre class="diag-pre" id="about-diag-pre">Loading diagnostics…</pre>
+            </div>
+          </section>
+        </main>
+
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <script src="./panel.js"></script>
+  </body>
+</html>

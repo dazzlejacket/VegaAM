@@ -1,0 +1,26 @@
+{
+  "provenance": "Public metadata fields extracted from historical repository acceptance captures. No new live playback was performed to create these fixtures. Bruce concert example in metadataPipeline.test.ts is a prior observation with no retained raw recording; do not represent it as a new recorded fixture.",
+  "records": [
+    {
+      "source": "acceptance/evidence/final-acceptance.json",
+      "snapshot": {
+        "sessionTitle": "The Beatles Channel \u00b7 The Beatles Channel",
+        "sessionArtist": "The Beatles - Wait"
+      }
+    },
+    {
+      "source": "acceptance/evidence/final-beatles.json",
+      "snapshot": {
+        "sessionTitle": "The Beatles Channel \u00b7 The Beatles Channel",
+        "sessionArtist": "The Beatles - The Long And Winding Road"
+      }
+    },
+    {
+      "source": "acceptance/evidence/metadata-fix.json",
+      "snapshot": {
+        "sessionTitle": "The Beatles Channel \u00b7 The Beatles Channel",
+        "sessionArtist": "The Beatles - Don't Bother Me"
+      }
+    }
+  ]
+}

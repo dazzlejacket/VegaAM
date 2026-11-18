@@ -1,0 +1,29 @@
+{
+  "provenance": "Actual official-player public metadata captured during the repaired Beatles/E Street playback exercise on 2026-11-04 America/New_York. Copy of selected fields from artifacts/live/playback-exercise.json; no credential fields. Provider spelling is preserved verbatim.",
+  "records": [
+    {
+      "requestedChannel": "The Beatles Channel",
+      "snapshot": {
+        "sessionTitle": "Meg Griffin Weekday Show \u00c2\u00b7 The Beatles Channel",
+        "sessionArtist": "The Beatles - Mother Nature's Son",
+        "pageCombinedTrack": "The Beatles - Mother Nature's Son"
+      },
+      "observedArtist": "The Beatles",
+      "observedTitle": "Mother Nature's Son",
+      "playing": true,
+      "buffering": false
+    },
+    {
+      "requestedChannel": "E Street Radio",
+      "snapshot": {
+        "sessionTitle": "Bruce Springsteen Concerts \u00c2\u00b7 E Street Radio",
+        "sessionArtist": "Bruce Springsteen & The E Street Band - Folllow That Dream",
+        "pageCombinedTrack": "Bruce Springsteen & The E Street Band - Folllow That Dream"
+      },
+      "observedArtist": "Bruce Springsteen & The E Street Band",
+      "observedTitle": "Folllow That Dream",
+      "playing": true,
+      "buffering": false
+    }
+  ]
+}

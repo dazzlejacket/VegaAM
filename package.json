@@ -1,0 +1,62 @@
+{
+  "name": "vegaam",
+  "productName": "VegaAM",
+  "version": "3.2.3",
+  "description": "Unofficial, open-source desktop companion for the official SiriusXM web player, with reversible light and dark surface themes, an integrated studio drawer, companion skins, and Last.fm / ListenBrainz scrobbling.",
+  "license": "MIT",
+  "author": "VegaAM contributors",
+  "homepage": "https://github.com/dazzlejacket/VegaAM#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dazzlejacket/VegaAM.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dazzlejacket/VegaAM/issues"
+  },
+  "keywords": [
+    "electron",
+    "siriusxm",
+    "scrobbling",
+    "lastfm",
+    "listenbrainz",
+    "themes",
+    "desktop-player",
+    "unofficial"
+  ],
+  "main": "dist/main/main.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build/build.mjs",
+    "build:watch": "node build/build.mjs --watch",
+    "start": "npm run build && electron .",
+    "dev": "node build/build.mjs && electron .",
+    "smoke": "npm run build && electron . --smoke",
+    "verify:v3": "npm run build && electron . --verify-official-first",
+    "qa:3.1": "npm run build && electron . --qa-3-1",
+    "qa:3.2": "npm run build && electron . --qa-3-2",
+    "qa:threshold": "npm run build && electron . --qa-threshold",
+    "live-probe": "npm run build && electron . --live-probe",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify:icons": "node scripts/verify-icons.mjs",
+    "screenshots": "npm run build && electron scripts/capture-screenshots.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "pack": "npm run build -- --release && electron-builder --dir",
+    "dist": "npm run build -- --release && electron-builder",
+    "dist:win": "npm run build -- --release && electron-builder --win",
+    "dist:mac": "npm run build -- --release && electron-builder --mac",
+    "dist:linux": "npm run build -- --release && electron-builder --linux"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "electron": "^45.2.2",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
+    "typescript": "5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

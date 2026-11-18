@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="VegaAM V-star mark">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="80" x2="864" y2="944" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#090D1A"/>
+      <stop offset="1" stop-color="#121A33"/>
+    </linearGradient>
+    <linearGradient id="v" x1="292" y1="292" x2="732" y2="752" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D9BFF"/>
+      <stop offset="1" stop-color="#4C7DFF"/>
+    </linearGradient>
+    <linearGradient id="star" x1="700" y1="160" x2="840" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4A7FF"/>
+      <stop offset="1" stop-color="#A371F7"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="230" fill="url(#bg)"/>
+  <rect x="13" y="13" width="998" height="998" rx="220" fill="none" stroke="#FFFFFF" stroke-opacity=".11" stroke-width="6"/>
+  <path d="M292 292 517 752 732 292" fill="none" stroke="url(#v)" stroke-width="138" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M773 138 788 216 842 240 788 264 773 342 758 264 704 240 758 216Z" fill="url(#star)"/>
+  <circle cx="773" cy="240" r="12" fill="#E8EEFF"/>
+</svg>

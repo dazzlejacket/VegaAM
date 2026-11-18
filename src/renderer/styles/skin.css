@@ -1,0 +1,353 @@
+/* Stylesheet for VegaAM Skinned Companion Window (`skin.html`, 560x720) */
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  overflow: hidden;
+  user-select: none;
+}
+
+.skin-chassis {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  border: 2px solid var(--bezel);
+  border-radius: var(--window-radius);
+  box-shadow: 0 10px 30px var(--bezel-shadow);
+  backdrop-filter: blur(var(--blur));
+}
+
+.skin-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
+}
+
+.skin-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.skin-led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--segment-off);
+  box-shadow: inset 0 1px 2px var(--shadow);
+}
+
+.skin-led[data-status='playing'] {
+  background: var(--meter-color);
+  box-shadow: 0 0 6px var(--meter-color);
+}
+
+.skin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+
+.skin-toolbar select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-family: var(--font-family);
+  font-size: 12px;
+}
+
+.toolbar-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toolbar-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.skin-deck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--player-padding);
+  gap: 14px;
+  overflow-y: auto;
+}
+
+/* Hardware LCD / VFD Readout Bezel */
+.skin-bezel {
+  background: var(--bg-sunken);
+  border: 2px solid var(--bezel);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  box-shadow: inset 0 2px 8px var(--bezel-shadow);
+  font-family: var(--display-face, var(--font-family));
+  position: relative;
+}
+
+.skin-bezel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--opacity-grid);
+  pointer-events: none;
+  background-image: linear-gradient(to right, var(--segment-off) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--segment-off) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.readout-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.readout-main {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body[data-theme='retro-amp'][data-mode='dark'] .readout-main,
+body[data-theme='retro-satellite'][data-mode='dark'] .readout-main {
+  color: var(--display-glow, var(--segment-color));
+}
+
+.readout-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meter-strip {
+  margin-top: 10px;
+  height: 7px;
+  background: var(--segment-off);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.meter-bar {
+  height: 100%;
+  background: var(--meter-color);
+  transition: width 0.3s ease;
+}
+
+/* Center Stage: Artwork & Track Metadata */
+.skin-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.skin-artwork-frame {
+  width: min(200px, var(--artwork-size));
+  height: min(200px, var(--artwork-size));
+  border-radius: var(--artwork-radius);
+  background: var(--bg-sunken);
+  border: 2px solid var(--bezel);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.skin-artwork {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: calc(0.65 + var(--opacity-artwork) * 0.35);
+}
+
+.skin-artwork-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.fallback-dial {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--knob);
+  border: 3px solid var(--bezel);
+  box-shadow: 0 2px 6px var(--bezel-shadow);
+}
+
+.skin-track-details {
+  max-width: 100%;
+}
+
+.skin-programme {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-text, var(--accent));
+  margin-bottom: 4px;
+}
+
+.skin-track-title {
+  margin: 0;
+  font-size: min(22px, var(--font-size-display));
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.skin-track-artist {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.skin-concert {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+/* Scrobble Strip */
+.skin-scrobble-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.scrobble-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scrobble-badge {
+  padding: 3px 9px;
+  border-radius: var(--radius-lg);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.scrobble-badge[data-status='ok'] {
+  color: var(--success-text, var(--success));
+}
+
+.scrobble-badge[data-status='warn'] {
+  color: var(--warning-text, var(--warning));
+}
+
+.scrobble-reason {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Transport Deck */
+.skin-transport {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transport-os-buttons,
+.transport-core-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.transport-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--transport-shadow);
+  flex: 1;
+}
+
+.transport-btn.transport-primary,
+.transport-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}

@@ -1,0 +1,107 @@
+name: Release
+
+# The release build.
+#
+# Everything in this workflow is OPTIONAL so that anybody can cut a release
+# from a fork:
+#
+#   1. The Last.fm application credentials. The open-source build ships
+#      WITHOUT a built-in key pair - Last.fm's API terms expect every
+#      application to identify itself with its own credentials, and a key pair
+#      baked into a binary is extractable by anyone who installs it. Users
+#      supply their own key pair in Settings -> Accounts. If the maintainer
+#      configures the repository secrets below, the pair is baked into the
+#      build instead. A shared secret that was published publicly is always a
+#      hard failure (see build/revokedSecrets.mjs).
+#
+#   2. The macOS signing identity. Without a stable Developer ID signature
+#      macOS asks for Keychain permission on every update - see
+#      docs/MACOS_KEYCHAIN.md. Without a certificate the build still
+#      succeeds, but the artifact is unsigned.
+
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (without the leading v)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release build
+    runs-on: macos-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Optional: the maintainer's own Last.fm application credentials.
+      # Never printed, never committed.
+      VEGAAM_LASTFM_API_KEY: ${{ secrets.VEGAAM_LASTFM_API_KEY }}
+      VEGAAM_LASTFM_API_SECRET: ${{ secrets.VEGAAM_LASTFM_API_SECRET }}
+      # Optional: the stable Developer ID Application identity.
+      CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
+      # Optional: Apple notarization credentials.
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Report the optional release configuration
+        run: |
+          set -euo pipefail
+          if [ -n "${VEGAAM_LASTFM_API_KEY}" ] && [ -n "${VEGAAM_LASTFM_API_SECRET}" ]; then
+            echo "Last.fm credentials: configured (a built-in key pair will be baked in)."
+          else
+            echo "Last.fm credentials: not configured (users will enter their own key pair)."
+          fi
+          if [ -n "${CSC_LINK}" ]; then
+            echo "macOS signing: configured."
+          else
+            echo "macOS signing: not configured - the artifact will be unsigned."
+          fi
+
+      - name: Typecheck and test
+        run: |
+          npm run typecheck
+          npm test
+
+      # `--release` stops the build when the shared secret is the revoked one.
+      # Missing credentials are only a warning in the open-source build.
+      - name: Build the installers
+        run: npm run dist
+
+      - name: Verify the macOS signature and bundle identity
+        if: env.CSC_LINK != ''
+        run: |
+          set -euo pipefail
+          APP="$(find release/mac* -maxdepth 1 -name '*.app' | head -1)"
+          echo "application: ${APP}"
+          codesign -dv --verbose=4 "${APP}" 2>&1 | tee mac-signature.txt
+          codesign --verify --deep --strict --verbose=2 "${APP}"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${APP}/Contents/Info.plist" \
+            | tee mac-bundle-id.txt
+          grep -q "Authority=Developer ID Application" mac-signature.txt
+
+      - name: Upload the release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-installers
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+          if-no-files-found: error

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VegaAM — Compact Player</title>
+    <link rel="stylesheet" href="./styles/compact.css" />
+    <style id="theme-vars"></style>
+  </head>
+  <body data-theme="modern" data-mode="dark">
+    <div class="compact-window">
+      <header class="compact-titlebar">
+        <div class="compact-channel" id="compact-channel">SiriusXM</div>
+        <div class="compact-window-actions">
+          <span class="scrobble-dot" id="compact-scrobble-dot" title="Scrobble status"></span>
+          <button
+            type="button"
+            class="icon-btn"
+            id="btn-compact-pin"
+            title="Keep companion always on top"
+            aria-label="Keep companion always on top"
+          >
+            Pin
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            id="btn-compact-skin"
+            title="Open Skinned Companion"
+            aria-label="Open Skinned Companion"
+          >
+            Skin
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            id="btn-compact-close"
+            title="Close Compact Player"
+            aria-label="Close Compact Player"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <main class="compact-body">
+        <div class="compact-art-wrap">
+          <img id="compact-art" class="compact-art" alt="" hidden />
+          <div id="compact-art-fallback" class="compact-art-fallback">SXM</div>
+        </div>
+
+        <div class="compact-meta">
+          <div class="compact-title" id="compact-title">Waiting for SiriusXM…</div>
+          <div class="compact-artist" id="compact-artist">Play a channel in the official player</div>
+          <div class="compact-sub" id="compact-sub">0s / 150s threshold</div>
+        </div>
+
+        <div class="compact-controls" role="group" aria-label="Companion controls">
+          <button
+            type="button"
+            class="ctrl-btn"
+            id="btn-compact-prev"
+            title="Previous"
+            aria-label="Previous"
+            hidden
+          >
+            ⏮
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn ctrl-primary"
+            id="btn-compact-play"
+            title="Play / Pause"
+            aria-label="Play / Pause"
+            hidden
+          >
+            ⏯
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn"
+            id="btn-compact-next"
+            title="Next"
+            aria-label="Next"
+            hidden
+          >
+            ⏭
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn"
+            id="btn-compact-mute"
+            title="Mute / Unmute Official Player"
+            aria-label="Mute / Unmute Official Player"
+          >
+            Mute
+          </button>
+          <button
+            type="button"
+            class="ctrl-btn ctrl-primary"
+            id="btn-compact-official"
+            title="Return to Official SiriusXM Player"
+          >
+            Player
+          </button>
+        </div>
+      </main>
+    </div>
+    <script src="./compact.js"></script>
+  </body>
+</html>

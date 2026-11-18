@@ -1,0 +1,43 @@
+# Standalone x64 packaging configuration.
+#
+# The main `electron-builder.yml` builds both x64 and arm64. This config
+# isolates the x64 target so the primary Windows installer can be produced
+# (and acceptance-tested) on its own.
+appId: app.vegaam.desktop
+productName: VegaAM
+copyright: VegaAM contributors
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - package.json
+
+npmRebuild: false
+
+extraMetadata:
+  main: dist/main/main.js
+
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: VegaAM
+  deleteAppDataOnUninstall: false
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  include: build/installer.nsh

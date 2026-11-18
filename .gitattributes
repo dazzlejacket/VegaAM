@@ -1,0 +1,20 @@
+# Normalize line endings: everything is stored as LF in the repository and
+# checked out as LF on every platform, so contributors on Windows, macOS and
+# Linux never see phantom diffs.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets are never touched.
+*.png binary
+*.ico binary
+*.icns binary
+*.jpg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.zip binary

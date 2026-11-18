@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" role="img" aria-label="VegaAM wordmark">
+  <defs>
+    <linearGradient id="v" x1="34" y1="44" x2="122" y2="126" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D9BFF"/><stop offset="1" stop-color="#4C7DFF"/>
+    </linearGradient>
+    <linearGradient id="s" x1="112" y1="22" x2="148" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4A7FF"/><stop offset="1" stop-color="#A371F7"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="14" width="132" height="132" rx="32" fill="#0B1020"/>
+  <path d="M42 44 74 112 106 44" fill="none" stroke="url(#v)" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M119 26 122 38 134 42 122 46 119 58 116 46 104 42 116 38Z" fill="url(#s)"/>
+  <text x="168" y="99" font-family="Segoe UI Variable Display, Segoe UI, system-ui, sans-serif" font-size="72" font-weight="650" letter-spacing="-2.5" fill="#E8EEFF">Vega<tspan fill="#5B8CFF">AM</tspan></text>
+</svg>
