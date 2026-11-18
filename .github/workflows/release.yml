@@ -41,15 +41,42 @@ jobs:
       # Never printed, never committed.
       VEGAAM_LASTFM_API_KEY: ${{ secrets.VEGAAM_LASTFM_API_KEY }}
       VEGAAM_LASTFM_API_SECRET: ${{ secrets.VEGAAM_LASTFM_API_SECRET }}
-      # Optional: the stable Developer ID Application identity.
-      CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
-      CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
-      # Optional: Apple notarization credentials.
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
+
+      # The signing and notarization variables must NOT be defined when the
+      # repository has no such secret: electron-builder treats any non-null
+      # CSC_LINK as a certificate FILE PATH, resolves an empty string against
+      # the project directory and aborts with "<project dir> not a file".
+      # Exporting them from GITHUB_ENV only when they exist keeps an
+      # unsigned build working for everybody who forks the repository.
+      - name: Export the optional signing configuration
+        id: signing
+        run: |
+          set -euo pipefail
+          if [ -n "${{ secrets.MACOS_CSC_LINK }}" ]; then
+            {
+              echo "CSC_LINK=${{ secrets.MACOS_CSC_LINK }}"
+              echo "CSC_KEY_PASSWORD=${{ secrets.MACOS_CSC_KEY_PASSWORD }}"
+            } >> "$GITHUB_ENV"
+            echo "macos_signed=true" >> "$GITHUB_OUTPUT"
+            echo "macOS signing: configured."
+          else
+            echo "macos_signed=false" >> "$GITHUB_OUTPUT"
+            echo "macOS signing: not configured - the artifact will be unsigned."
+          fi
+          if [ -n "${{ secrets.APPLE_ID }}" ] \
+            && [ -n "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" ] \
+            && [ -n "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            {
+              echo "APPLE_ID=${{ secrets.APPLE_ID }}"
+              echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
+              echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}"
+            } >> "$GITHUB_ENV"
+            echo "Apple notarization: configured."
+          else
+            echo "Apple notarization: not configured - the artifact is not notarized."
+          fi
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -68,7 +95,7 @@ jobs:
           else
             echo "Last.fm credentials: not configured (users will enter their own key pair)."
           fi
-          if [ -n "${CSC_LINK}" ]; then
+          if [ -n "${CSC_LINK:-}" ]; then
             echo "macOS signing: configured."
           else
             echo "macOS signing: not configured - the artifact will be unsigned."
@@ -81,11 +108,15 @@ jobs:
 
       # `--release` stops the build when the shared secret is the revoked one.
       # Missing credentials are only a warning in the open-source build.
+      # `--publish never` keeps electron-builder from publishing on its own:
+      # the release assets are uploaded by this workflow, not by the builder.
       - name: Build the installers
-        run: npm run dist
+        run: |
+          npm run build -- --release
+          npx electron-builder --publish never
 
       - name: Verify the macOS signature and bundle identity
-        if: env.CSC_LINK != ''
+        if: steps.signing.outputs.macos_signed == 'true'
         run: |
           set -euo pipefail
           APP="$(find release/mac* -maxdepth 1 -name '*.app' | head -1)"

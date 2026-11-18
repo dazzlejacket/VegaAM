@@ -37,7 +37,9 @@ jobs:
             echo "::error::A local credential file is committed."
             fail=1
           fi
-          if git ls-files -z | xargs -0 grep -lE 'VEGAAM_LASTFM_API_SECRET=[^[:space:]]+' 2>/dev/null; then
+          # Only a real credential value counts: the placeholder in the
+          # documentation and this pattern itself must not trip the check.
+          if git ls-files -z | xargs -0 grep -lE 'VEGAAM_LASTFM_API_SECRET=[A-Za-z0-9]{20,}' 2>/dev/null; then
             echo "::error::A Last.fm shared secret appears to be committed."
             fail=1
           fi

@@ -4,7 +4,10 @@
   "version": "3.2.3",
   "description": "Unofficial, open-source desktop companion for the official SiriusXM web player, with reversible light and dark surface themes, an integrated studio drawer, companion skins, and Last.fm / ListenBrainz scrobbling.",
   "license": "MIT",
-  "author": "VegaAM contributors",
+  "author": {
+    "name": "VegaAM contributors",
+    "email": "contributors@users.noreply.github.com"
+  },
   "homepage": "https://github.com/dazzlejacket/VegaAM#readme",
   "repository": {
     "type": "git",
