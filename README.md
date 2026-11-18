@@ -164,9 +164,11 @@ your install directory. The installer creates a Start Menu and Desktop shortcut.
 
 ### macOS
 
-Download the `.dmg`, drag **VegaAM** into `/Applications` and launch it. Release
-builds are signed and notarized; macOS will still ask for permission to use the
-Keychain the first time, because that is where the Last.fm session key is stored.
+Download the `.dmg` (or the `.zip`), drag **VegaAM** into `/Applications` and launch it.
+The published artifacts are **not code-signed**, so Gatekeeper will ask you to confirm
+the first launch — right-click the app and choose **Open** if it refuses. macOS will also
+ask for permission to use the Keychain the first time, because that is where the Last.fm
+session key is stored. See [`docs/MACOS_KEYCHAIN.md`](docs/MACOS_KEYCHAIN.md).
 
 ### Linux
 
@@ -174,8 +176,8 @@ Download the **AppImage** (or the `.deb` / `.rpm`) and run it. The AppImage need
 installation:
 
 ```sh
-chmod +x VegaAM-<version>-x64.AppImage
-./VegaAM-<version>-x64.AppImage
+chmod +x VegaAM-<version>-x86_64.AppImage
+./VegaAM-<version>-x86_64.AppImage
 ```
 
 <details>
