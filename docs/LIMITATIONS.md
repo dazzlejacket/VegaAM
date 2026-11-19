@@ -75,8 +75,11 @@ It is the boundary of the project.
   compact and skinned windows show a neutral placeholder. VegaAM does not scrape the
   page for artwork.
 - A missing artist is not replaced by a channel name. There are **no shipped
-  channel→artist mappings**. A user-created correction is explicit, exact and
-  labelled inferred.
+  channel→artist mappings**. A user-created mapping or correction is explicit and
+  labelled inferred, and it applies to the broadcast strings it was created for —
+  a correction that was saved for a song title alone also applies to that song on
+  another station. VegaAM never invents an artist that was neither published nor
+  configured by the user.
 - Channel numbers are not in MediaSession. VegaAM does not invent them.
 - Stream position/duration is not song position/duration. Observation age is not
   provider freshness.

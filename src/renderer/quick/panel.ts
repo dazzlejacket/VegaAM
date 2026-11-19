@@ -8,6 +8,7 @@
 
 import type { SurfaceThemeState, SurfaceThemeSummary } from '../../core/surfaceTheme/types';
 import { DraftFieldRegistry } from '../../core/settings/draftFields';
+import { lookupKey } from '../../core/util/text';
 import type { SxmApi } from '../../preload/app';
 import type { VegaDrawerState, VegaQuickApi } from '../../preload/quick';
 import type { AppState, HistoryEntryView } from '../../shared/types';
@@ -487,6 +488,7 @@ function renderAppState(state: AppState): void {
   }
   renderMutedChannels(state.settings.scrobbleMutedChannels);
   renderChannelMappings(state.settings.metadata.channelMappings);
+  renderArtistAliases(state.settings.metadata.artistAliases ?? {});
   renderManualCorrections(state.settings.metadata.manualCorrections);
 
   // Accounts Tab
@@ -674,6 +676,21 @@ function renderHistoryList(): void {
       right.appendChild(retryBtn);
     }
 
+    const fixBtn = document.createElement('button');
+    fixBtn.type = 'button';
+    fixBtn.className = 'btn btn-subtle btn-sm';
+    fixBtn.textContent = 'Fix tagging';
+    fixBtn.title = 'Correct the artist and title of this track';
+    fixBtn.addEventListener('click', () => {
+      prefillCorrection({
+        rawArtist: entry.rawArtist,
+        rawTitle: entry.rawTitle,
+        artist: entry.artist,
+        title: entry.title,
+      });
+    });
+    right.appendChild(fixBtn);
+
     row.append(main, right);
     container.appendChild(row);
   }
@@ -788,8 +805,45 @@ function renderChannelMappings(
   }
 }
 
+function renderArtistAliases(aliases: Record<string, string>): void {
+  const container = document.getElementById('artist-aliases-list');
+  if (!container) return;
+  container.replaceChildren();
+
+  const entries = Object.entries(aliases ?? {});
+  if (entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'field-hint';
+    empty.textContent = 'No artist aliases configured.';
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const [alias, canonical] of entries) {
+    const item = document.createElement('div');
+    item.className = 'rule-item';
+    const text = document.createElement('span');
+    text.textContent = `${alias} → ${canonical}`;
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn btn-subtle btn-sm';
+    delBtn.textContent = 'Remove';
+    delBtn.addEventListener('click', async () => {
+      if (!latestState) return;
+      const next = { ...(latestState.settings.metadata.artistAliases ?? {}) };
+      delete next[alias];
+      await window.sxm.patchSettings({
+        metadata: { ...latestState.settings.metadata, artistAliases: next },
+      });
+      showToast(`Removed alias for ${alias}`);
+    });
+    item.append(text, delBtn);
+    container.appendChild(item);
+  }
+}
+
 function renderManualCorrections(
-  corrections: Record<string, { artist?: string; title?: string }>,
+  corrections: Record<string, { artist?: string; title?: string; album?: string }>,
 ): void {
   const container = document.getElementById('manual-corrections-list');
   if (!container) return;
@@ -800,7 +854,7 @@ function renderManualCorrections(
     const item = document.createElement('div');
     item.className = 'rule-item';
     const text = document.createElement('span');
-    text.textContent = `${key} → ${[val.artist, val.title].filter(Boolean).join(' — ')}`;
+    text.textContent = `${key} → ${[val.artist, val.title, val.album].filter(Boolean).join(' — ')}`;
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'btn btn-subtle btn-sm';
@@ -971,6 +1025,17 @@ document.getElementById('btn-disable-themes')?.addEventListener('click', async (
 });
 
 // Activity Tab controls
+document.getElementById('act-fix-btn')?.addEventListener('click', () => {
+  const pb = latestState?.playback;
+  if (!pb) return;
+  prefillCorrection({
+    rawArtist: pb.rawArtist,
+    rawTitle: pb.rawTitle,
+    artist: pb.artist,
+    title: pb.title,
+  });
+});
+
 document.getElementById('act-mute-channel-btn')?.addEventListener('click', async () => {
   const ch = latestState?.playback.channel;
   if (!ch) return;
@@ -1089,6 +1154,81 @@ document.getElementById('map-add-btn')?.addEventListener('click', async () => {
   showToast(`Mapped ${channel} → ${artist}`);
 });
 
+/**
+ * Fill the correction form with a track and jump to the Scrobbling tab.
+ *
+ * The broadcast strings are the exact ones a correction is keyed on, so the
+ * user never has to reproduce them by hand.
+ */
+function prefillCorrection(input: {
+  rawArtist?: string | null;
+  rawTitle?: string | null;
+  artist?: string | null;
+  title?: string | null;
+}): void {
+  const set = (id: string, value: string): void => {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    if (!el) return;
+    el.value = value;
+    draftFields.type(id, value);
+  };
+  set('corr-raw-artist', input.rawArtist ?? '');
+  set('corr-raw-title', input.rawTitle ?? '');
+  set('corr-new-artist', input.artist ?? '');
+  set('corr-new-title', input.title ?? '');
+  switchTab('scrobbling');
+  showToast('Correction filled in — adjust the values, then save');
+}
+
+/** Copy the system clipboard into a text field. */
+async function pasteIntoField(id: string): Promise<void> {
+  const input = document.getElementById(id) as HTMLInputElement | null;
+  if (!input) return;
+  let text = '';
+  try {
+    text = await window.sxm.readClipboard();
+  } catch {
+    text = '';
+  }
+  if (!text) {
+    showToast('The clipboard is empty');
+    return;
+  }
+  input.value = text.trim();
+  draftFields.type(id, input.value);
+  input.focus();
+  showToast('Pasted from the clipboard');
+}
+
+document.getElementById('alias-add-btn')?.addEventListener('click', async () => {
+  if (!latestState) return;
+  const aliasIn = document.getElementById('alias-artist-input') as HTMLInputElement | null;
+  const canonicalIn = document.getElementById('alias-canonical-input') as HTMLInputElement | null;
+  const alias = aliasIn?.value.trim() ?? '';
+  const canonical = canonicalIn?.value.trim() ?? '';
+  if (!alias || !canonical) {
+    showToast('Enter both the broadcast artist and the artist to scrobble');
+    return;
+  }
+  const key = lookupKey(alias);
+  if (!key) {
+    showToast('That artist name cannot be used as an alias');
+    return;
+  }
+  await window.sxm.patchSettings({
+    metadata: {
+      ...latestState.settings.metadata,
+      artistAliases: {
+        ...(latestState.settings.metadata.artistAliases ?? {}),
+        [key]: canonical,
+      },
+    },
+  });
+  if (aliasIn) aliasIn.value = '';
+  if (canonicalIn) canonicalIn.value = '';
+  showToast(`Aliased ${alias} → ${canonical}`);
+});
+
 document.getElementById('corr-save-btn')?.addEventListener('click', async () => {
   const rawArtist =
     (document.getElementById('corr-raw-artist') as HTMLInputElement | null)?.value.trim() || null;
@@ -1098,7 +1238,9 @@ document.getElementById('corr-save-btn')?.addEventListener('click', async () => 
     (document.getElementById('corr-new-artist') as HTMLInputElement | null)?.value.trim() || '';
   const title =
     (document.getElementById('corr-new-title') as HTMLInputElement | null)?.value.trim() || '';
-  const res = await window.sxm.correctMetadata({ rawArtist, rawTitle, artist, title });
+  const album =
+    (document.getElementById('corr-new-album') as HTMLInputElement | null)?.value.trim() || '';
+  const res = await window.sxm.correctMetadata({ rawArtist, rawTitle, artist, title, album });
   showToast(res.detail);
 });
 
@@ -1123,6 +1265,18 @@ document.getElementById('acc-lb-enabled')?.addEventListener('change', async (e) 
   const checked = (e.target as HTMLInputElement).checked;
   await window.sxm.patchSettings({ listenbrainzEnabled: checked });
   showToast(checked ? 'ListenBrainz enabled' : 'ListenBrainz disabled');
+});
+
+document.getElementById('acc-lb-paste-btn')?.addEventListener('click', () => {
+  void pasteIntoField('acc-lb-token');
+});
+
+document.getElementById('acc-lfm-key-paste-btn')?.addEventListener('click', () => {
+  void pasteIntoField('acc-lfm-key');
+});
+
+document.getElementById('acc-lfm-secret-paste-btn')?.addEventListener('click', () => {
+  void pasteIntoField('acc-lfm-secret');
 });
 
 document.getElementById('acc-lb-save-btn')?.addEventListener('click', async () => {

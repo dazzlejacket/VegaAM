@@ -84,7 +84,11 @@ See [`SECURITY.md`](SECURITY.md) for the full service boundary and
 
 - **Tray and native menu (`src/main/tray.ts`, `src/main/menu.ts`)** — zero-pixel
   desktop chrome with keyboard accelerators (`Ctrl+,`, `Ctrl+Shift+A`, `Ctrl+M`,
-  `Alt+Left`, `Alt+Right`, `Ctrl+R`).
+  `Alt+Left`, `Alt+Right`, `Ctrl+R`). The menu also carries the standard **Edit**
+  roles (`cut`, `copy`, `paste`, `selectAll`): Electron registers the clipboard
+  accelerators from these menu items, so without them the drawer fields could not
+  receive a pasted key. The template lives in `src/main/menuTemplate.ts` so that it
+  can be tested without starting Electron.
 
 ## Themes and skins
 

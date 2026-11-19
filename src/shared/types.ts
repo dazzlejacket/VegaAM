@@ -263,4 +263,5 @@ export const IPC = {
   legacyOpenFolder: 'legacy:open-folder',
   legacyUninstall: 'legacy:uninstall',
   legacyRefreshIconCache: 'legacy:refresh-icon-cache',
+  clipboardRead: 'clipboard:read',
 } as const;

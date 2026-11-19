@@ -870,6 +870,21 @@ body[data-mode='light'] .mode-tag.dark {
   min-width: 0;
 }
 
+/*
+ * The whole panel inherits `user-select: none` from `body`, which makes the
+ * text inside a form field unselectable and blocks the paste command in
+ * Chromium. Editable controls must opt back into text selection.
+ */
+input,
+textarea,
+select,
+[contenteditable="true"],
+.input-text,
+.input-select {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .input-sm {
   height: 26px;
   font-size: 11.5px;

@@ -59,6 +59,8 @@ export interface ResolvedMetadata {
   programme: string | null;
   artist: string | null;
   title: string | null;
+  /** Album as published by the player (null when it publishes none). */
+  album: string | null;
   qualifier: string | null;
   rawArtistField: string | null;
   rawTitleField: string | null;
@@ -182,6 +184,7 @@ export function resolveMediaSessionMetadata(
 
   const sessionTitle = normalizeMojibake(snapshot.sessionTitle);
   const sessionArtist = normalizeMojibake(snapshot.sessionArtist);
+  const sessionAlbum = normalizeMojibake(snapshot.sessionAlbum);
 
   const known = (options.knownChannels ?? []).map((name) => key(name));
   const isKnownChannel = (value: string | null | undefined): boolean =>
@@ -201,6 +204,9 @@ export function resolveMediaSessionMetadata(
   }
   if (channel) {
     reasons.push(`The media session named the channel "${channel}".`);
+  }
+  if (sessionAlbum) {
+    reasons.push(`The official player published the album "${sessionAlbum}".`);
   }
 
   if (sessionTrack.artist && sessionTrack.song) {
@@ -279,6 +285,7 @@ export function resolveMediaSessionMetadata(
     programme,
     artist,
     title,
+    album: sessionAlbum,
     qualifier,
     rawArtistField: artist,
     rawTitleField: song,

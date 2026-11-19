@@ -36,8 +36,28 @@ export function stripChannelDecoration(channel: string): string {
 }
 
 /**
- * Find a user-configured mapping for a channel. Exact (normalised) matches win,
- * then matches that only differ by the "Radio" decoration.
+ * Minimum length of a channel name that may be matched as a substring.
+ *
+ * Short names ("HQ", "XM") would match far too many channels, so a partial
+ * match is only allowed for names that actually identify a station.
+ */
+const MIN_PARTIAL_MATCH_LENGTH = 4;
+
+/**
+ * Find a user-configured mapping for a channel.
+ *
+ * The player does not publish one canonical channel name. Depending on the
+ * station and the broadcast it may report "E Street Radio",
+ * "Bruce Springsteen / E Street Radio" or "Bruce Springsteen Concerts".
+ * The lookup therefore tries, in order:
+ *
+ *   1. an exact (normalised) match,
+ *   2. a match that only differs by the "Radio"/"Channel" decoration,
+ *   3. a partial match: the published channel contains the mapped channel, or
+ *      the mapped channel contains the published channel.
+ *
+ * The longest partial match wins, so a specific mapping is never shadowed by
+ * a shorter one.
  */
 export function findChannelMapping(
   channel: string | null | undefined,
@@ -47,14 +67,28 @@ export function findChannelMapping(
   const key = channelKey(channel);
   if (!key) return undefined;
 
-  const exact = mappings.find((m) => !m.disabled && channelKey(m.channel) === key);
+  const active = mappings.filter((m) => !m.disabled);
+  if (active.length === 0) return undefined;
+
+  const exact = active.find((m) => channelKey(m.channel) === key);
   if (exact) return exact;
 
   const stripped = channelKey(stripChannelDecoration(channel));
-  const loose = mappings.find(
-    (m) => !m.disabled && channelKey(stripChannelDecoration(m.channel)) === stripped,
-  );
-  return loose;
+  const loose = active.find((m) => channelKey(stripChannelDecoration(m.channel)) === stripped);
+  if (loose) return loose;
+
+  // Partial match: the published channel carries the mapped name (or the
+  // other way round). The longest match is the most specific one.
+  let best: { mapping: ChannelArtistMapping; length: number } | undefined;
+  for (const mapping of active) {
+    const mapped = channelKey(mapping.channel);
+    if (mapped.length < MIN_PARTIAL_MATCH_LENGTH) continue;
+    if (!key.includes(mapped) && !mapped.includes(key)) continue;
+    if (!best || mapped.length > best.length) {
+      best = { mapping, length: mapped.length };
+    }
+  }
+  return best?.mapping;
 }
 
 /**

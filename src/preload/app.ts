@@ -83,6 +83,7 @@ const api = {
   correctMetadata: (payload: {
     artist?: string;
     title?: string;
+    album?: string;
     rawArtist?: string | null;
     rawTitle?: string | null;
     remove?: boolean;
@@ -135,6 +136,9 @@ const api = {
 
   /** Open a link in the system browser. */
   openExternal: (url: string) => ipcRenderer.invoke(IPC.openExternal, url),
+
+  /** Read the system clipboard (used by the explicit "Paste" buttons). */
+  readClipboard: (): Promise<string> => ipcRenderer.invoke(IPC.clipboardRead),
 };
 
 export type SxmApi = typeof api;

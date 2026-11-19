@@ -13,6 +13,7 @@ import { lookupKey } from '../util/text';
 export interface ManualCorrection {
   artist?: string;
   title?: string;
+  album?: string;
 }
 
 /** The map of remembered corrections. */
@@ -33,6 +34,68 @@ export function manualCorrectionKey(
 }
 
 /**
+ * A candidate the correction lookup may match.
+ *
+ * `kind` describes where the candidate came from. It is only used to explain
+ * the match in the diagnostics view.
+ */
+export interface ManualCorrectionCandidate {
+  artist?: string | null;
+  title?: string | null;
+  kind: 'raw-pair' | 'display-pair' | 'raw-title' | 'display-title' | 'raw-artist' | 'display-artist';
+}
+
+/** A correction that applies to the metadata that was looked up. */
+export interface ManualCorrectionMatch {
+  /** The key the correction was stored under. */
+  key: string;
+  /** The stored correction. */
+  correction: ManualCorrection;
+  /** Which candidate matched. */
+  kind: ManualCorrectionCandidate['kind'];
+}
+
+/**
+ * Find the correction that applies to a piece of metadata.
+ *
+ * The user cannot be expected to reproduce the exact strings the official
+ * player published, and the interface never shows them as a pair. A
+ * correction is therefore looked up with an ordered list of candidates:
+ *
+ *   1. the raw artist/title pair the player published,
+ *   2. the artist/title pair the user sees in the interface,
+ *   3. the raw song title on its own,
+ *   4. the song title the user sees, on its own,
+ *   5. the raw artist on its own,
+ *   6. the artist the user sees, on its own.
+ *
+ * The first candidate that carries a stored correction wins, so the most
+ * specific rule is always the one that applies.
+ */
+export function findManualCorrection(
+  corrections: ManualCorrections | undefined,
+  candidates: ManualCorrectionCandidate[],
+): ManualCorrectionMatch | undefined {
+  if (!corrections) return undefined;
+
+  for (const candidate of candidates) {
+    const hasArtist = Boolean(candidate.artist);
+    const hasTitle = Boolean(candidate.title);
+    if (!hasArtist && !hasTitle) continue;
+
+    const key = manualCorrectionKey(candidate.artist, candidate.title);
+    if (!key) continue;
+
+    const correction = corrections[key];
+    if (correction) {
+      return { key, correction, kind: candidate.kind };
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Store a correction for the given raw metadata.
  *
  * Returns a new map - the input is never modified.
@@ -49,9 +112,11 @@ export function withManualCorrection(
   const existing = next[key] ?? {};
   const artist = correction.artist?.trim();
   const title = correction.title?.trim();
+  const album = correction.album?.trim();
   if (artist) existing.artist = artist;
   if (title) existing.title = title;
-  if (!existing.artist && !existing.title) return next;
+  if (album) existing.album = album;
+  if (!existing.artist && !existing.title && !existing.album) return next;
   next[key] = existing;
   return next;
 }

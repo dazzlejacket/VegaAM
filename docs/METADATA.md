@@ -19,3 +19,36 @@ The official SiriusXM web player publishes two combined fields in `navigator.med
 3. Separates trailing numeric year qualifiers such as `(67)` into `qualifier` while preserving exact provider spelling (e.g. `Folllow That Dream`).
 4. Rejects non-music bumpers, hashtags (`#FabFourum`, `#FromMeToYou`), phone numbers (`844.999.2328`), and interview banners (`Zoey Deutch - Beatlemania!!`).
 5. Marks date/location prefixes in the artist slot (`2/14/23 Houston, TX`) as non-artist metadata; if the user has configured an explicit channel→artist mapping for that station (e.g. `E Street Radio` → `Bruce Springsteen`), `normalizeMetadata` (`src/core/metadata/normalizer.ts`) supplies the artist (`evidence: "inferred"`, `source: "channel-fallback"`), keeps the concert date/location for display (`Badlands (February 14, 2023 – Houston, TX)`), and strips it from the submitted scrobble title (`Badlands`).
+6. Carries the album the player publishes (`navigator.mediaSession.metadata.album`) into the
+   normalised track, so the submitted scrobble is tagged with it instead of album-less.
+
+## User corrections (`src/core/metadata/manualCorrections.ts`)
+
+A correction is remembered under a normalised key. The user never reproduces the raw
+broadcast strings by hand: the interface offers **Fix tagging** on the Now Playing card
+and on every history entry, which fills the form with the exact strings of that track.
+
+The lookup itself tries several candidates, most specific first:
+
+1. the raw artist/title pair the player published,
+2. the artist/title pair the interface shows,
+3. the raw song title on its own,
+4. the song title the interface shows, on its own,
+5. the raw artist on its own,
+6. the artist the interface shows, on its own.
+
+A correction that was saved for the song title alone therefore applies to that song for
+every artist, and the confirmation message states what the correction is keyed on.
+
+## Channel mappings and artist aliases (`src/core/metadata/channelFallback.ts`)
+
+- A channel mapping matches the published channel exactly, then by the
+  `Radio`/`Channel`/`Station` decoration, and finally as a partial match: a station
+  that publishes itself as `Bruce Springsteen / E Street Radio` finds the mapping for
+  `E Street Radio`. The longest matching mapping wins, so a specific mapping is never
+  shadowed by a shorter one.
+- An artist alias renames the artist exactly as it is broadcast
+  (`Bruce Springsteen & The E Street Band` → `Bruce Springsteen`) before the track is
+  submitted. Both controls live in the **Scrobbling Rules** tab and are explicit,
+  user-created rules — nothing is shipped with the application.
+

@@ -25,6 +25,7 @@ import {
 } from './concert';
 import { findChannelMapping, resolveChannelArtist } from './channelFallback';
 import { detectNonMusicMetadata } from './filters';
+import { findManualCorrection } from './manualCorrections';
 import { applyRules, compileRules } from './rules';
 import type {
   ConcertInfo,
@@ -651,17 +652,33 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
     : null;
 
   // 9. Manual corrections have the final word.
-  const manualKey = lookupKey([rawArtist, rawTitle].filter(Boolean).join(' - '));
-  const manual = config.manualCorrections?.[manualKey];
+  //
+  // The correction is looked up with several candidates, because the user
+  // types what the interface shows them - not the exact strings the player
+  // published. A correction saved for "Bruce Springsteen" / "Badlands" must
+  // also apply to a broadcast whose artist field carried a date and location.
+  const manualMatch = findManualCorrection(config.manualCorrections, [
+    { artist: rawArtist, title: rawTitle, kind: 'raw-pair' },
+    { artist: scrobbleArtist, title: scrobbleTitle, kind: 'display-pair' },
+    { artist: scrobbleArtist, title, kind: 'display-pair' },
+    { title: rawTitle, kind: 'raw-title' },
+    { title: scrobbleTitle, kind: 'display-title' },
+    { title, kind: 'display-title' },
+    { artist: rawArtist, kind: 'raw-artist' },
+    { artist: scrobbleArtist, kind: 'display-artist' },
+  ]);
+  const manual = manualMatch?.correction;
   let finalArtist = scrobbleArtist;
   let finalDisplayTitle = displayTitle;
   let finalScrobbleTitle = scrobbleTitle;
+  let finalAlbum = raw.album ?? null;
   if (manual) {
     if (manual.artist) finalArtist = manual.artist;
     if (manual.title) {
       finalDisplayTitle = manual.title;
       finalScrobbleTitle = manual.title;
     }
+    if (manual.album) finalAlbum = manual.album;
     source = 'manual';
     evidence = 'manual';
     ambiguous = false;
@@ -709,6 +726,7 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
     displayTitle: finalDisplayTitle,
     scrobbleTitle: finalScrobbleTitle,
     scrobbleArtist: finalArtist,
+    album: finalAlbum,
     featured,
     version: parsed.version ?? null,
     qualifier: parsed.qualifier ?? raw.qualifier ?? null,

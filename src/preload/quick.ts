@@ -89,6 +89,7 @@ const sxmApi = {
   correctMetadata: (payload: {
     artist?: string;
     title?: string;
+    album?: string;
     rawArtist?: string | null;
     rawTitle?: string | null;
     remove?: boolean;
@@ -135,6 +136,9 @@ const sxmApi = {
   refreshIconCache: (): Promise<boolean> => ipcRenderer.invoke(IPC.legacyRefreshIconCache),
 
   openExternal: (url: string) => ipcRenderer.invoke(IPC.openExternal, url),
+
+  /** Read the system clipboard (used by the explicit "Paste" buttons). */
+  readClipboard: (): Promise<string> => ipcRenderer.invoke(IPC.clipboardRead),
 };
 
 const quickApi = {

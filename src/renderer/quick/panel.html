@@ -444,6 +444,9 @@
                   </p>
                 </div>
                 <div class="monitor-actions">
+                  <button class="btn btn-subtle btn-sm" id="act-fix-btn" type="button">
+                    Fix tagging
+                  </button>
                   <button class="btn btn-subtle btn-sm" id="act-mute-channel-btn" type="button">
                     Mute Channel
                   </button>
@@ -588,7 +591,9 @@
               <h2>Single-Artist Channel Mappings</h2>
               <p class="card-desc">
                 Map dedicated artist channels (e.g. <code>E Street Radio → Bruce Springsteen</code>)
-                for broadcasts that omit the artist field.
+                for broadcasts that omit the artist field. The mapping is also used when the
+                player publishes a decorated channel name such as
+                <code>Bruce Springsteen / E Street Radio</code>.
               </p>
               <div class="inline-form">
                 <input
@@ -611,22 +616,51 @@
             </div>
 
             <div class="studio-card">
+              <h2>Artist Aliases</h2>
+              <p class="card-desc">
+                Rename an artist exactly as the player publishes it, e.g.
+                <code>Bruce Springsteen &amp; The E Street Band → Bruce Springsteen</code>. The
+                corrected name is what gets scrobbled, so your profile stays clean.
+              </p>
+              <div class="inline-form">
+                <input
+                  type="text"
+                  id="alias-artist-input"
+                  class="input-text"
+                  placeholder="Artist as broadcast"
+                />
+                <input
+                  type="text"
+                  id="alias-canonical-input"
+                  class="input-text"
+                  placeholder="Artist to scrobble"
+                />
+                <button class="btn btn-primary btn-sm" id="alias-add-btn" type="button">
+                  Add
+                </button>
+              </div>
+              <div class="rule-list" id="artist-aliases-list"></div>
+            </div>
+
+            <div class="studio-card">
               <h2>Manual Track Corrections</h2>
               <p class="card-desc">
-                Override mislabelled SiriusXM broadcast strings whenever they air again.
+                Override mislabelled SiriusXM broadcast strings whenever they air again. Use
+                <em>Fix</em> on a history entry (or the current track in Activity) to fill the
+                fields automatically - typing the broadcast strings by hand is not required.
               </p>
               <div class="grid-2col">
                 <input
                   type="text"
                   id="corr-raw-artist"
                   class="input-text"
-                  placeholder="Broadcast artist"
+                  placeholder="Broadcast artist (optional)"
                 />
                 <input
                   type="text"
                   id="corr-raw-title"
                   class="input-text"
-                  placeholder="Broadcast title"
+                  placeholder="Broadcast song title"
                 />
                 <input
                   type="text"
@@ -641,6 +675,19 @@
                   placeholder="Corrected title"
                 />
               </div>
+              <div class="grid-2col">
+                <input
+                  type="text"
+                  id="corr-new-album"
+                  class="input-text"
+                  placeholder="Corrected album (optional)"
+                />
+              </div>
+              <p class="field-hint">
+                Leave the broadcast artist empty to apply the correction to that song for every
+                artist. The correction matches the broadcast strings as well as the names shown
+                in the interface.
+              </p>
               <div class="card-actions-right">
                 <button class="btn btn-primary btn-sm" id="corr-save-btn" type="button">
                   Save Correction
@@ -709,6 +756,9 @@
                   class="input-text"
                   placeholder="Paste ListenBrainz user token"
                 />
+                <button class="btn btn-subtle btn-sm" id="acc-lb-paste-btn" type="button">
+                  Paste
+                </button>
                 <button class="btn btn-primary btn-sm" id="acc-lb-save-btn" type="button">
                   Connect &amp; Verify
                 </button>
@@ -716,6 +766,12 @@
                   Disconnect
                 </button>
               </div>
+              <p class="field-hint">
+                The token is copied from
+                <strong>listenbrainz.org &rarr; Settings &rarr; User token</strong>. Use
+                <em>Paste</em> or <kbd>Ctrl</kbd>+<kbd>V</kbd> - the token never has to be
+                typed by hand.
+              </p>
             </div>
 
             <div class="studio-card" id="acc-lfm-card">
@@ -766,21 +822,35 @@
                   keychain, never in the settings file.
                 </p>
                 <div class="grid-2col">
-                  <input
-                    type="text"
-                    id="acc-lfm-key"
-                    class="input-text"
-                    placeholder="Last.fm API Key"
-                    autocomplete="off"
-                    spellcheck="false"
-                  />
-                  <input
-                    type="password"
-                    id="acc-lfm-secret"
-                    class="input-text"
-                    placeholder="Last.fm Shared Secret"
-                    autocomplete="off"
-                  />
+                  <div class="inline-form">
+                    <input
+                      type="text"
+                      id="acc-lfm-key"
+                      class="input-text"
+                      placeholder="Last.fm API Key"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <button class="btn btn-subtle btn-sm" id="acc-lfm-key-paste-btn" type="button">
+                      Paste
+                    </button>
+                  </div>
+                  <div class="inline-form">
+                    <input
+                      type="password"
+                      id="acc-lfm-secret"
+                      class="input-text"
+                      placeholder="Last.fm Shared Secret"
+                      autocomplete="off"
+                    />
+                    <button
+                      class="btn btn-subtle btn-sm"
+                      id="acc-lfm-secret-paste-btn"
+                      type="button"
+                    >
+                      Paste
+                    </button>
+                  </div>
                 </div>
                 <div class="btn-row">
                   <button class="btn btn-subtle btn-sm" id="acc-lfm-save-btn" type="button">
@@ -879,45 +949,13 @@
             <div class="studio-card">
               <div class="studio-card-head">
                 <div>
-                  <h2>Unofficial project notice</h2>
-                  <p>
-                    VegaAM is an independent, community-driven open-source project. It is
-                    <strong>not affiliated with, endorsed by or sponsored by Sirius XM Holdings
-                    Inc.</strong> SiriusXM, Sirius XM and all related trademarks belong to their
-                    respective owners and are used here only to identify the service this app works
-                    with. Every theme, skin and icon shipped with VegaAM is original VegaAM artwork.
-                  </p>
-                </div>
-                <span class="badge accent">Unofficial</span>
-              </div>
-              <ul class="about-list">
-                <li>
-                  <strong>You need your own legitimate SiriusXM subscription.</strong> VegaAM does
-                  not provide SiriusXM access and ships no content of any kind.
-                </li>
-                <li>
-                  <strong>No DRM bypass, no audio capture, no redistribution.</strong> VegaAM never
-                  decrypts, records, proxies or re-streams audio, never calls unofficial SiriusXM
-                  APIs and never blocks or alters the official player's requests.
-                </li>
-                <li>
-                  <strong>The official player owns everything.</strong> Sign-in, subscription checks,
-                  the channel guide, search, favourites and protected media stay 100 % inside the
-                  official SiriusXM page that VegaAM hosts.
-                </li>
-              </ul>
-            </div>
-
-            <div class="studio-card">
-              <div class="studio-card-head">
-                <div>
-                  <h2>VegaAM 3.2.3 — Unofficial SiriusXM Desktop Companion</h2>
+                  <h2>VegaAM 3.2.0 — Official-First SiriusXM Desktop</h2>
                   <p>
                     Single-window integrated workspace with real light &amp; dark surface themes,
                     verified scrobbling, and zero popup clutter.
                   </p>
                 </div>
-                <span class="badge accent">v3.2.3</span>
+                <span class="badge accent">v3.2.0</span>
               </div>
 
               <div class="shortcuts-grid">

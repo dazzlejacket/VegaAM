@@ -320,6 +320,7 @@ const api = {
   launchLegacyUninstaller: async () => true,
   refreshIconCache: async () => true,
   openExternal: async () => true,
+  readClipboard: async () => '',
 };
 const quick = {
   getState: api.getState,

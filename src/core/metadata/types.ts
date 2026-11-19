@@ -14,6 +14,8 @@ export interface RawMetadata {
   artist?: string | null;
   /** Song/title field exactly as the player reports it. */
   title?: string | null;
+  /** Album field as the player reports it (empty when it publishes none). */
+  album?: string | null;
   /** Where the raw string came from. */
   origin?: 'media-session' | 'dom' | 'page-bridge' | 'manual' | 'unknown';
   /** Epoch ms the metadata was observed. */
@@ -149,7 +151,7 @@ export interface MetadataConfig {
   /** Artist aliases: normalised alias -> canonical artist. */
   artistAliases: Record<string, string>;
   /** Remembered manual corrections keyed by the normalised raw string. */
-  manualCorrections: Record<string, { artist?: string; title?: string }>;
+  manualCorrections: Record<string, { artist?: string; title?: string; album?: string }>;
   /** How concert details are rendered in the scrobble title. */
   concertInScrobbleTitle: 'always' | 'when-known' | 'never';
   /** Whether "feat." credits are kept in the submitted artist field. */

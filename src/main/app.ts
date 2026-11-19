@@ -10,7 +10,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { app, dialog, ipcMain, nativeTheme, shell } from 'electron';
+import { app, clipboard, dialog, ipcMain, nativeTheme, shell } from 'electron';
 
 import { MprisService, type MprisCommand } from '../core/mpris/mpris';
 import { channelKey } from '../core/metadata/channelFallback';
@@ -596,6 +596,7 @@ export class AppController {
       channel: resolved.channel,
       artist: resolved.artist,
       title: resolved.rawTitleField ?? combined,
+      album: resolved.album,
       origin: 'media-session',
       receivedAt: snapshot.observedAt,
       qualifier: resolved.qualifier,
@@ -1529,6 +1530,23 @@ export class AppController {
 
     ipcMain.handle(IPC.stateGet, () => this.buildState());
 
+    /**
+     * Read the system clipboard.
+     *
+     * The account fields hold a token, an API key and a shared secret. A
+     * keyboard paste is not always available inside the drawer (a custom
+     * application menu can take the native clipboard accelerator with it), so
+     * the fields also offer an explicit "Paste" button that reads the
+     * clipboard through the main process.
+     */
+    ipcMain.handle(IPC.clipboardRead, () => {
+      try {
+        return clipboard.readText();
+      } catch {
+        return '';
+      }
+    });
+
     ipcMain.handle(IPC.settingsPatch, async (_event, patch: unknown) => {
       const safe = sanitizeSettingsPatch(patch);
       return this.patchSettings(safe);
@@ -1665,14 +1683,21 @@ export class AppController {
       const data = (payload ?? {}) as {
         artist?: string;
         title?: string;
+        album?: string;
         rawArtist?: string | null;
         rawTitle?: string | null;
         remove?: boolean;
         key?: string;
       };
       const raw = this.engine?.state?.raw;
-      const rawArtist = data.rawArtist ?? raw?.artist ?? null;
-      const rawTitle = data.rawTitle ?? raw?.title ?? null;
+      // The raw artist/title describe the broadcast the correction is about.
+      // The user may leave the artist empty on purpose ("every artist for
+      // this song"), so the current track is only used as a fallback when
+      // nothing at all was typed.
+      const typedArtist = typeof data.rawArtist === 'string' ? data.rawArtist.trim() : '';
+      const typedTitle = typeof data.rawTitle === 'string' ? data.rawTitle.trim() : '';
+      const rawArtist = typedArtist || (typedTitle ? '' : (raw?.artist ?? null));
+      const rawTitle = typedTitle || (typedArtist ? '' : (raw?.title ?? null));
 
       if (data.remove) {
         const key = data.key ?? manualCorrectionKey(rawArtist, rawTitle);
@@ -1686,19 +1711,34 @@ export class AppController {
 
       const artist = typeof data.artist === 'string' ? data.artist.trim() : '';
       const title = typeof data.title === 'string' ? data.title.trim() : '';
-      if (!artist && !title) return { ok: false, detail: 'Enter an artist or a title.' };
+      const album = typeof data.album === 'string' ? data.album.trim() : '';
+      if (!artist && !title && !album) {
+        return { ok: false, detail: 'Enter an artist or a title.' };
+      }
       const corrections = withManualCorrection(
         this.settings.metadata.manualCorrections,
         rawArtist,
         rawTitle,
-        { artist: artist || undefined, title: title || undefined },
+        {
+          artist: artist || undefined,
+          title: title || undefined,
+          album: album || undefined,
+        },
       );
       await this.patchSettings({
         metadata: { ...this.settings.metadata, manualCorrections: corrections },
       });
+
+      // Say exactly what the correction is keyed on, so the confirmation is
+      // true instead of promising a match that can never happen.
+      const scope = typedArtist && typedTitle
+        ? `"${typedArtist} - ${typedTitle}"`
+        : typedTitle
+          ? `"${typedTitle}" (any artist)`
+          : `"${typedArtist}"`;
       return {
         ok: true,
-        detail: `Saved. The correction is used whenever "${[rawArtist, rawTitle].filter(Boolean).join(' - ')}" is broadcast again.`,
+        detail: `Saved. The correction is used whenever ${scope} is broadcast again.`,
         key: manualCorrectionKey(rawArtist, rawTitle),
       };
     });
@@ -2191,14 +2231,19 @@ function sanitizeMetadataConfig(input: unknown): AppSettings['metadata'] {
     config.artistAliases = aliases;
   }
   if (raw.manualCorrections && typeof raw.manualCorrections === 'object') {
-    const corrections: Record<string, { artist?: string; title?: string }> = {};
+    const corrections: Record<string, { artist?: string; title?: string; album?: string }> = {};
     for (const [key, value] of Object.entries(raw.manualCorrections as Record<string, unknown>)) {
       if (!value || typeof value !== 'object') continue;
       const entry = value as Record<string, unknown>;
       const artist = typeof entry.artist === 'string' ? entry.artist : undefined;
       const title = typeof entry.title === 'string' ? entry.title : undefined;
-      if (!artist && !title) continue;
-      corrections[key] = { ...(artist ? { artist } : {}), ...(title ? { title } : {}) };
+      const album = typeof entry.album === 'string' ? entry.album : undefined;
+      if (!artist && !title && !album) continue;
+      corrections[key] = {
+        ...(artist ? { artist } : {}),
+        ...(title ? { title } : {}),
+        ...(album ? { album } : {}),
+      };
     }
     config.manualCorrections = corrections;
   }

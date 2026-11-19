@@ -5,6 +5,40 @@ All notable changes to VegaAM are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **A key can be pasted into the account fields.** The custom application menu carried
+  no standard editing roles, and Electron registers the clipboard accelerators
+  (`Ctrl+C` / `Ctrl+X` / `Ctrl+V` / `Ctrl+A`) from those menu items — so the renderer had
+  no working paste command and a token had to be typed by hand. The menu now has a real
+  **Edit** menu, the drawer inputs opt back into text selection, and the token and
+  credential fields offer an explicit **Paste** button that reads the clipboard through
+  the main process.
+- **A manual track correction now reaches the track it was made for.** The correction
+  was keyed on the exact strings the player published, while the interface shows the
+  resolved artist and title. A correction saved for a broadcast whose artist field
+  carried a date and location therefore never matched. Corrections are now looked up
+  with several candidates — the raw pair, the pair shown in the interface, the song
+  title on its own, the artist on its own — most specific first, and the confirmation
+  states exactly what the correction is keyed on.
+- **A channel mapping also matches a decorated channel name.** A station that publishes
+  itself as `Bruce Springsteen / E Street Radio` now finds the mapping for
+  `E Street Radio`; the longest matching mapping wins.
+
+### Added
+
+- **"Fix tagging" on the Now Playing card and on every history entry.** It fills the
+  correction form with the exact broadcast strings of that track, so the raw metadata
+  never has to be reproduced by hand.
+- **Artist Aliases in the Scrobbling tab.** The engine already supported renaming an
+  artist exactly as it is broadcast (`Bruce Springsteen & The E Street Band` →
+  `Bruce Springsteen`); the control to do it is now reachable from the interface.
+- **The album is no longer dropped.** The album the official player publishes is carried
+  into the normalised track and submitted with the scrobble, and a correction can set
+  it.
+
 ## [3.2.3]
 
 ### Added
