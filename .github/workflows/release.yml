@@ -219,9 +219,17 @@ jobs:
           echo "assets:"
           printf '  %s\n' "${assets[@]}"
 
-          notes="release-notes-${VERSION}.md"
-          if [ ! -f "${notes}" ]; then
-            notes=""
+          # The notes file is named after the release tag, with or without
+          # the leading "v".
+          notes=""
+          for candidate in "release-notes-${VERSION}.md" "release-notes-v${VERSION}.md"; do
+            if [ -f "${candidate}" ]; then
+              notes="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${notes}" ]; then
+            echo "::warning::No release notes file found for version ${VERSION}."
           fi
 
           if gh release view "${TAG}" >/dev/null 2>&1; then
