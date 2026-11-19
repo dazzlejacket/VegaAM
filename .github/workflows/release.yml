@@ -45,7 +45,10 @@ jobs:
         include:
           - name: Windows installer
             os: windows-latest
-            package: npx electron-builder --win --publish never
+            package: npx electron-builder --win --x64 --publish never
+            # The arm64 NSIS installer is a cross-build. It is best effort: a
+            # missing arm64 installer must not cost the whole release.
+            package_extra: npx electron-builder --win --arm64 --publish never
             artifact: windows-installers
             path: release/*.exe
           - name: macOS installer
@@ -126,6 +129,9 @@ jobs:
           sudo apt-get install -y rpm
 
       - name: Report the optional release configuration
+        # Git Bash on the Windows runner: this step uses shell syntax, and the
+        # default shell there is PowerShell.
+        shell: bash
         run: |
           set -euo pipefail
           if [ -n "${VEGAAM_LASTFM_API_KEY}" ] && [ -n "${VEGAAM_LASTFM_API_SECRET}" ]; then
@@ -135,6 +141,7 @@ jobs:
           fi
 
       - name: Typecheck and test
+        shell: bash
         run: |
           npm run typecheck
           npm test
@@ -144,6 +151,7 @@ jobs:
       # `--publish never` keeps electron-builder from publishing on its own:
       # the release assets are uploaded by the publish job below.
       - name: Build the installers
+        shell: bash
         run: |
           npm run build -- --release
           ${{ matrix.package }}
@@ -151,6 +159,7 @@ jobs:
       - name: Package the extra architecture (best effort)
         if: matrix.package_extra != ''
         continue-on-error: true
+        shell: bash
         run: ${{ matrix.package_extra }}
 
       - name: Verify the macOS signature and bundle identity
