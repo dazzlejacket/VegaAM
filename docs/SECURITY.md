@@ -1,6 +1,6 @@
 # Security and service boundaries
 
-**Status:** the boundary described here is what VegaAM 3.2.3 implements and what the
+**Status:** the boundary described here is what VegaAM 3.2.4 implements and what the
 automated test suite enforces. It is both a security model and a **service-term
 contract**: a change that crosses one of these lines is a breaking change for the
 project, not a feature.

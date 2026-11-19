@@ -1,7 +1,7 @@
 {
   "name": "vegaam",
   "productName": "VegaAM",
-  "version": "3.2.3",
+  "version": "3.2.4",
   "description": "Unofficial, open-source desktop companion for the official SiriusXM web player, with reversible light and dark surface themes, an integrated studio drawer, companion skins, and Last.fm / ListenBrainz scrobbling.",
   "license": "MIT",
   "author": {

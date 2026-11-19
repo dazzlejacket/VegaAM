@@ -1,6 +1,6 @@
 # Live-radio track state machine
 
-> **VegaAM 3.2.3.** The bridge reads `navigator.mediaSession` only: no rendered
+> **VegaAM 3.2.4.** The bridge reads `navigator.mediaSession` only: no rendered
 > channel-page text, no HTMLMediaElement DOM reads, no channel-name artist
 > inference, no seed channel mappings. The state machine, timing and duplicate rules
 > below describe the shipped behaviour. The **threshold** is adaptive since 3.2.1 —

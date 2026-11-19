@@ -1,6 +1,6 @@
 # Known limitations
 
-**VegaAM 3.2.3.** This document is deliberately honest about what the software does
+**VegaAM 3.2.4.** This document is deliberately honest about what the software does
 **not** do, what it cannot do, and which claims are *not* verified on a real machine.
 It is the boundary of the project.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-**VegaAM 3.2.3 — the ownership boundary, the processes and the windows.**
+**VegaAM 3.2.4 — the ownership boundary, the processes and the windows.**
 
 ## The ownership boundary
 

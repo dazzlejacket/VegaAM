@@ -1,6 +1,6 @@
 name: Release
 
-# The release build.
+# The release build and the GitHub release it publishes.
 #
 # Everything in this workflow is OPTIONAL so that anybody can cut a release
 # from a fork:
@@ -29,14 +29,45 @@ on:
         required: true
 
 permissions:
-  contents: read
+  # The release itself is created by this workflow, so the token needs write
+  # access to the repository contents.
+  contents: write
 
 jobs:
-  release:
-    name: Release build
-    runs-on: macos-latest
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform must not cancel the others: a release with two of the
+      # three platforms is far better than no release at all.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows installer
+            os: windows-latest
+            package: npx electron-builder --win --publish never
+            artifact: windows-installers
+            path: release/*.exe
+          - name: macOS installer
+            os: macos-latest
+            package: npx electron-builder --mac --publish never
+            artifact: macos-installers
+            path: |
+              release/*.dmg
+              release/*.zip
+          - name: Linux packages
+            os: ubuntu-latest
+            package: npx electron-builder --linux --x64 --publish never
+            # The arm64 AppImage has to be cross-built on an x64 runner. It is
+            # best effort: a missing arm64 AppImage must not cost the whole
+            # release.
+            package_extra: npx electron-builder --linux --arm64 --publish never
+            artifact: linux-packages
+            path: |
+              release/*.AppImage
+              release/*.deb
+              release/*.rpm
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Optional: the maintainer's own Last.fm application credentials.
       # Never printed, never committed.
       VEGAAM_LASTFM_API_KEY: ${{ secrets.VEGAAM_LASTFM_API_KEY }}
@@ -51,6 +82,7 @@ jobs:
       # Exporting them from GITHUB_ENV only when they exist keeps an
       # unsigned build working for everybody who forks the repository.
       - name: Export the optional signing configuration
+        if: runner.os == 'macOS'
         id: signing
         run: |
           set -euo pipefail
@@ -87,6 +119,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install rpmbuild (needed by the rpm target)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
       - name: Report the optional release configuration
         run: |
           set -euo pipefail
@@ -94,11 +132,6 @@ jobs:
             echo "Last.fm credentials: configured (a built-in key pair will be baked in)."
           else
             echo "Last.fm credentials: not configured (users will enter their own key pair)."
-          fi
-          if [ -n "${CSC_LINK:-}" ]; then
-            echo "macOS signing: configured."
-          else
-            echo "macOS signing: not configured - the artifact will be unsigned."
           fi
 
       - name: Typecheck and test
@@ -109,11 +142,16 @@ jobs:
       # `--release` stops the build when the shared secret is the revoked one.
       # Missing credentials are only a warning in the open-source build.
       # `--publish never` keeps electron-builder from publishing on its own:
-      # the release assets are uploaded by this workflow, not by the builder.
+      # the release assets are uploaded by the publish job below.
       - name: Build the installers
         run: |
           npm run build -- --release
-          npx electron-builder --publish never
+          ${{ matrix.package }}
+
+      - name: Package the extra architecture (best effort)
+        if: matrix.package_extra != ''
+        continue-on-error: true
+        run: ${{ matrix.package_extra }}
 
       - name: Verify the macOS signature and bundle identity
         if: steps.signing.outputs.macos_signed == 'true'
@@ -130,9 +168,59 @@ jobs:
       - name: Upload the release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-installers
-          path: |
-            release/*.dmg
-            release/*.zip
-            release/*.exe
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.path }}
           if-no-files-found: error
+
+  publish:
+    name: Publish the GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the installers
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          if [ -n "${VERSION}" ]; then VERSION="${{ inputs.version }}"; fi
+          echo "release: ${TAG} (version ${VERSION})"
+
+          shopt -s nullglob
+          assets=(release-assets/*)
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "::error::No release assets were built."
+            exit 1
+          fi
+          echo "assets:"
+          printf '  %s\n' "${assets[@]}"
+
+          notes="release-notes-${VERSION}.md"
+          if [ ! -f "${notes}" ]; then
+            notes=""
+          fi
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" "${assets[@]}" --clobber
+            if [ -n "${notes}" ]; then
+              gh release edit "${TAG}" --title "VegaAM ${VERSION}" --notes-file "${notes}"
+            fi
+          elif [ -n "${notes}" ]; then
+            gh release create "${TAG}" "${assets[@]}" \
+              --title "VegaAM ${VERSION}" --notes-file "${notes}"
+          else
+            gh release create "${TAG}" "${assets[@]}" \
+              --title "VegaAM ${VERSION}" --generate-notes
+          fi
+
+          echo "release published: $(gh release view "${TAG}" --json url --jq .url)"

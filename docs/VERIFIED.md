@@ -4,7 +4,7 @@ This document separates **claims backed by an automated test or a recorded run**
 **claims that are not verified**. It is written so that a reader can trust the
 difference.
 
-**VegaAM 3.2.3.**
+**VegaAM 3.2.4.**
 
 ---
 

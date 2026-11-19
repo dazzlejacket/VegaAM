@@ -1,4 +1,4 @@
-# Metadata Acquisition and Provenance (VegaAM 3.2.3)
+# Metadata Acquisition and Provenance (VegaAM 3.2.4)
 
 In VegaAM, all DOM scraping and page-header corroboration have been removed. Metadata is acquired exclusively through an isolated, read-only preload (`src/preload/mediaBridge.ts`) that reads the standard W3C Media Session API (`navigator.mediaSession.metadata` and `navigator.mediaSession.playbackState`) published by the official SiriusXM web player.
 
