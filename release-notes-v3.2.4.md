@@ -49,6 +49,7 @@ blocks or alters the official player's requests.
 
 | File | Architecture |
 | :--- | :--- |
+| `VegaAM-3.2.4.exe` | x64 and arm64 in one installer |
 | `VegaAM-3.2.4-x64.exe` | x64 only |
 | `VegaAM-3.2.4-arm64.exe` | arm64 only |
 
@@ -56,18 +57,18 @@ blocks or alters the official player's requests.
 
 | File | Architecture |
 | :--- | :--- |
-| `VegaAM-3.2.4-mac-x64.dmg` | x64 only |
-| `VegaAM-3.2.4-mac-arm64.dmg` | arm64 only |
-| `VegaAM-3.2.4-mac-x64.zip` | x64 only |
-| `VegaAM-3.2.4-mac-arm64.zip` | arm64 only |
+| `VegaAM-3.2.4.dmg` | x64 (Intel) |
+| `VegaAM-3.2.4-arm64.dmg` | arm64 (Apple Silicon) |
+| `VegaAM-3.2.4-mac.zip` | x64 (Intel) |
+| `VegaAM-3.2.4-arm64-mac.zip` | arm64 (Apple Silicon) |
 
 **Linux**
 
 | File | Architecture |
 | :--- | :--- |
-| `VegaAM-3.2.4-linux-x86_64.AppImage` | x86_64 |
-| `VegaAM-3.2.4-linux-arm64.AppImage` | arm64 |
-| `vegaam_3.2.4_amd64.deb` | x86_64 |
+| `VegaAM-3.2.4-x86_64.AppImage` | x86_64 |
+| `VegaAM-3.2.4-arm64.AppImage` | arm64 |
+| `vegaam_3.2.4_amd64.deb` | amd64 |
 | `vegaam-3.2.4.x86_64.rpm` | x86_64 |
 
 Every asset is built by the same
