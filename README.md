@@ -142,6 +142,13 @@ SiriusXM artwork.
 - **Metadata hygiene** — broadcast strings are separated into artist/title/quality
   markers, non-music bumpers and hashtag promos are rejected rather than guessed, and
   every correction you make is explicit and reversible.
+- **Tagging you can correct without typing anything.** A **Fix tagging** button on the
+  Now Playing card and on every history entry fills the correction form with the exact
+  broadcast strings of that track, **Artist Aliases** rename an artist exactly as it is
+  broadcast (`Bruce Springsteen & The E Street Band` → `Bruce Springsteen`), and a
+  channel mapping also matches a decorated station name
+  (`Bruce Springsteen / E Street Radio` → `E Street Radio`). The album the player
+  publishes is carried into the scrobble instead of being dropped.
 - **Retry queue and history** — failed submissions are queued, bounded and retried;
   nothing is silently dropped.
 
@@ -267,8 +274,9 @@ sent anywhere except to Last.fm.
 **ListenBrainz**
 
 1. Create a token at [listenbrainz.org/settings](https://listenbrainz.org/settings/).
-2. Paste it into **Settings → Accounts**. It is stored encrypted like the Last.fm
-   session.
+2. Paste it into **Settings → Accounts** — with `Ctrl+V`, or with the **Paste** button
+   next to the field, which reads the clipboard for you. It is stored encrypted like the
+   Last.fm session.
 
 ---
 
