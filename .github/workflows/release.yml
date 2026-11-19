@@ -201,8 +201,13 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          VERSION="${TAG#v}"
-          if [ -n "${VERSION}" ]; then VERSION="${{ inputs.version }}"; fi
+          # A tag push carries the version in the tag name; a manual dispatch
+          # carries it in the input.
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${TAG#v}"
+          fi
           echo "release: ${TAG} (version ${VERSION})"
 
           shopt -s nullglob
