@@ -5,6 +5,28 @@ All notable changes to VegaAM are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.5]
+
+### Fixed
+
+- **An album label is never scrobbled as the artist.** SiriusXM publishes some channels
+  in the album-label form — `From "The Rising" — My City Of Ruins` — where the album
+  stands where the artist would be. VegaAM used to take the left half of that string as
+  the artist, so every track of E Street Radio was tagged with the artist
+  `From "The Rising"` instead of `Bruce Springsteen`. The label is now read as the
+  album, the artist comes from the user's channel mapping, and the song keeps its full
+  title.
+- **The album reaches the scrobble.** The album recovered from the album label is
+  submitted with the track instead of being dropped.
+- **A song title keeps the bracket that belongs to it.** `Further On (Up The Road)` lost
+  the bracket whenever the artist could not be derived from the title.
+
+### Changed
+
+- **The ListenBrainz token hint says what it means.** The hint under the token field no
+  longer explains that the token never has to be typed by hand — the **Paste** button
+  next to it does that.
+
 ## [3.2.4]
 
 ### Fixed
