@@ -148,7 +148,9 @@ SiriusXM artwork.
   broadcast (`Bruce Springsteen & The E Street Band` → `Bruce Springsteen`), and a
   channel mapping also matches a decorated station name
   (`Bruce Springsteen / E Street Radio` → `E Street Radio`). The album the player
-  publishes is carried into the scrobble instead of being dropped.
+  publishes is carried into the scrobble instead of being dropped, and a channel that
+  publishes its album where the artist would be (`From "The Rising" — My City Of Ruins`)
+  is never scrobbled as `From "The Rising"`.
 - **Retry queue and history** — failed submissions are queued, bounded and retried;
   nothing is silently dropped.
 

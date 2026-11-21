@@ -16,6 +16,7 @@
  */
 
 import { isCapitalized, lookupKey, normalizeText, tidy, words } from '../util/text';
+import { matchAlbumLabel } from './albumLabel';
 import {
   classifyFragment,
   containsLiveDescriptor,
@@ -535,8 +536,27 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
   // an artist (e.g. "12/13/92 Boston, MA"). The provider blocks such a pair;
   // a user-confirmed channel mapping may still supply a trustworthy artist.
   let artistFieldIsDateLike = false;
+  // The album the published artist field carried as an album label
+  // (e.g. `From "The Rising"`). It is an album, never an artist.
+  let albumFromLabel: string | null = null;
+  // True when the published artist field carried an album label. The title
+  // field is then the song itself and never an "artist - title" pair, so no
+  // artist may be derived from it.
+  let artistFieldWasAlbumLabel = false;
   if (explicitArtist) {
-    if (isClearlyNotAnArtist(explicitArtist)) {
+    // The album label is checked first: an album like "1975 Live" would
+    // otherwise be mistaken for a date.
+    const albumLabel = matchAlbumLabel(explicitArtist);
+    if (albumLabel) {
+      albumFromLabel = albumLabel.album;
+      artistFieldWasAlbumLabel = true;
+      notes.push(
+        `The artist field "${explicitArtist}" is an album label, not an artist credit, and was ignored.`,
+      );
+      evidenceReasons.push(
+        `The official player published the album "${albumLabel.album}" instead of an artist, so the artist has to come from the channel.`,
+      );
+    } else if (isClearlyNotAnArtist(explicitArtist)) {
       artistFieldIsDateLike = true;
       notes.push(
         `The artist field "${explicitArtist}" contains date/location information and was ignored.`,
@@ -554,7 +574,14 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
 
   // 4. Derive the artist from the title field.
   let title = parsed.title;
-  if (!artist && parsed.segments.length >= 2) {
+  // When the artist field carried an album label, the title field is the
+  // song the player published - not an "artist - title" pair. Deriving an
+  // artist from it would scrobble the song title as the artist.
+  //
+  // The title itself is always the published one: a bracket that belongs to
+  // the song ("Further On (Up The Road)") is part of it and must not be
+  // dropped just because the artist is unknown.
+  if (!artist && parsed.segments.length >= 2 && !artistFieldWasAlbumLabel) {
     const decision = decideArtistAndTitle(parsed.segments, {
       config,
       channel,
@@ -568,8 +595,6 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
       reversed = decision.reversed;
       evidenceReasons.push(...decision.reasons);
     }
-  } else if (!artist && parsed.segments.length === 1) {
-    title = parsed.segments[0]!;
   }
 
   // 5. Featured artists.
@@ -672,6 +697,9 @@ export function normalizeMetadata(raw: RawMetadata, config: MetadataConfig): Nor
   let finalDisplayTitle = displayTitle;
   let finalScrobbleTitle = scrobbleTitle;
   let finalAlbum = raw.album ?? null;
+  // The album the player published in its own field wins. When it published
+  // none, the album recovered from the album label is used instead.
+  if (!finalAlbum && albumFromLabel) finalAlbum = albumFromLabel;
   if (manual) {
     if (manual.artist) finalArtist = manual.artist;
     if (manual.title) {

@@ -8,6 +8,8 @@
  *      "Bruce Springsteen / E Street Radio".
  *   3. The album the player publishes must survive into the scrobble.
  *   4. An artist alias must rename the artist that is scrobbled.
+ *   5. The album-label form (`From "The Rising" - My City Of Ruins`) must
+ *      never be scrobbled as an artist.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -51,6 +53,15 @@ const CONCERT_BROADCAST: ProviderMetadataSnapshot = {
 };
 
 const E_STREET_MAPPING = [{ channel: 'E Street Radio', artist: 'Bruce Springsteen' }];
+
+/**
+ * The album-label broadcast of E Street Radio, exactly as the official player
+ * published it: the album stands where the artist would be.
+ */
+const ALBUM_LABEL_BROADCAST: ProviderMetadataSnapshot = {
+  sessionTitle: 'Bruce Springsteen Concerts · E Street Radio',
+  sessionArtist: 'From "The Rising" — My City Of Ruins',
+};
 
 describe('E Street Radio tagging', () => {
   it('uses the channel mapping when the artist field carries a date and location', () => {
@@ -182,5 +193,76 @@ describe('scrobble tag quality', () => {
     );
 
     expect(normalized.scrobbleArtist).toBe('Bruce Springsteen');
+  });
+});
+
+describe('the album-label form of the official player', () => {
+  it('reads the album label as the album and never as the artist', () => {
+    const { resolved, normalized } = pipeline(
+      ALBUM_LABEL_BROADCAST,
+      config({ channelMappings: E_STREET_MAPPING }),
+    );
+
+    // The album label is the album.
+    expect(resolved.album).toBe('The Rising');
+    expect(normalized.album).toBe('The Rising');
+    // The artist comes from the channel mapping, not from the label.
+    expect(normalized.scrobbleArtist).toBe('Bruce Springsteen');
+    expect(normalized.scrobbleTitle).toBe('My City Of Ruins');
+    expect(normalized.source).toBe('channel-fallback');
+    expect(normalized.scrobbleSafe).toBe(true);
+    // The published string stays visible in the diagnostics.
+    expect(normalized.raw.artist).toBe('From "The Rising"');
+  });
+
+  it('keeps the song title intact when it carries a dash', () => {
+    const { normalized } = pipeline(
+      {
+        sessionTitle: 'Bruce Springsteen Concerts · E Street Radio',
+        sessionArtist: 'From "The Rising" — Thunder Road - Live',
+      },
+      config({ channelMappings: E_STREET_MAPPING }),
+    );
+
+    expect(normalized.scrobbleArtist).toBe('Bruce Springsteen');
+    expect(normalized.scrobbleTitle).toBe('Thunder Road - Live');
+  });
+
+  it('keeps the bracket that belongs to the song title', () => {
+    // "Further On (Up The Road)" is the song. The bracket is part of the
+    // title and must not be dropped because the artist is unknown.
+    const { normalized } = pipeline(
+      {
+        sessionTitle: 'Bruce Springsteen Concerts · E Street Radio',
+        sessionArtist: 'From "The Rising" — Further On (Up The Road)',
+      },
+      config({ channelMappings: E_STREET_MAPPING }),
+    );
+
+    expect(normalized.scrobbleArtist).toBe('Bruce Springsteen');
+    expect(normalized.scrobbleTitle).toBe('Further On (Up The Road)');
+  });
+
+  it('never scrobbles the album label as an artist', () => {
+    // Without a channel mapping the artist stays unknown - the album label
+    // must not become the artist of the scrobble.
+    const { normalized } = pipeline(ALBUM_LABEL_BROADCAST);
+
+    expect(normalized.scrobbleArtist).toBeNull();
+    expect(normalized.scrobbleTitle).toBe('My City Of Ruins');
+    expect(normalized.album).toBe('The Rising');
+  });
+
+  it('does not mistake a song that starts with "From" for an album label', () => {
+    // "From Me To You" is a song title, not an album label: the album name
+    // has to be quoted.
+    const { resolved } = pipeline({
+      sessionTitle: 'The Beatles Channel · The Beatles Channel',
+      sessionArtist: 'The Beatles - From Me To You',
+    });
+
+    expect(resolved.artist).toBe('The Beatles');
+    expect(resolved.title).toBe('From Me To You');
+    expect(resolved.album).toBeNull();
   });
 });

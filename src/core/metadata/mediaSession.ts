@@ -12,6 +12,7 @@
  * provider spelling (e.g. "Folllow That Dream" stays intact).
  */
 
+import { matchAlbumLabel } from './albumLabel';
 import { detectNonMusicMetadata } from './filters';
 import { isClearlyNotAnArtist } from './normalizer';
 
@@ -128,23 +129,60 @@ export function splitChannelProgramme(
 }
 
 /**
- * Split the combined "<artist> - <song>" field on the first separator only.
+ * The roles of the combined "<artist> - <song>" field.
  */
-export function splitCombinedArtistSong(
-  value: string | null | undefined,
-): { artist: string | null; song: string | null } {
+export interface CombinedTrack {
+  /**
+   * The artist credit.
+   *
+   * When the player published an album label instead of an artist (the
+   * album-label form), the published label is kept here so that the
+   * diagnostics stay truthful. The normalisation engine reads it as an album
+   * and never as an artist.
+   */
+  artist: string | null;
+  /** The song title. */
+  song: string | null;
+  /** The album recovered from an album label. */
+  album: string | null;
+}
+
+/**
+ * Split the combined "<artist> - <song>" field into its roles.
+ *
+ * The album-label form (`From "The Rising" - My City Of Ruins`) is recognised
+ * first: the label is an album and not an artist credit, and the text behind
+ * it is the song. That text is never split again, so a song with a dash in
+ * its title survives the split.
+ */
+export function splitCombinedTrack(value: string | null | undefined): CombinedTrack {
   const text = normalizeMojibake(value);
-  if (!text) return { artist: null, song: null };
+  if (!text) return { artist: null, song: null, album: null };
+
+  const label = matchAlbumLabel(text);
+  if (label) {
+    return { artist: label.label, song: label.rest || null, album: label.album };
+  }
 
   for (const separator of TRACK_SEPARATORS) {
     const index = text.indexOf(separator);
     if (index <= 0) continue;
     const artist = normalizeMojibake(text.slice(0, index));
     const song = normalizeMojibake(text.slice(index + separator.length));
-    if (artist && song) return { artist, song };
+    if (artist && song) return { artist, song, album: null };
   }
 
-  return { artist: null, song: null };
+  return { artist: null, song: null, album: null };
+}
+
+/**
+ * Split the combined "<artist> - <song>" field on the first separator only.
+ */
+export function splitCombinedArtistSong(
+  value: string | null | undefined,
+): { artist: string | null; song: string | null } {
+  const track = splitCombinedTrack(value);
+  return { artist: track.artist, song: track.song };
 }
 
 /**
@@ -191,7 +229,7 @@ export function resolveMediaSessionMetadata(
     !!value && known.includes(key(value));
 
   const fromTitle = splitChannelProgramme(sessionTitle, options.knownChannels);
-  const sessionTrack = splitCombinedArtistSong(sessionArtist);
+  const sessionTrack = splitCombinedTrack(sessionArtist);
 
   const channel = fromTitle.channel;
   let programme = fromTitle.programme;
@@ -207,6 +245,11 @@ export function resolveMediaSessionMetadata(
   }
   if (sessionAlbum) {
     reasons.push(`The official player published the album "${sessionAlbum}".`);
+  }
+  if (sessionTrack.album) {
+    reasons.push(
+      `The official player published the album "${sessionTrack.album}" in place of an artist.`,
+    );
   }
 
   if (sessionTrack.artist && sessionTrack.song) {
@@ -266,7 +309,9 @@ export function resolveMediaSessionMetadata(
     scrobbleBlockReason = 'The published metadata contains a programme hashtag instead of a song.';
   } else if (PHONE_NUMBER_RE.test(artist) || PHONE_NUMBER_RE.test(title)) {
     scrobbleBlockReason = 'The published metadata contains a call-in phone number.';
-  } else if (isClearlyNotAnArtist(artist)) {
+  } else if (isClearlyNotAnArtist(artist) && !sessionTrack.album) {
+    // An album label is not a date, even when the album name carries a year
+    // ("From "1975 Live""). It is handled as an album further down.
     scrobbleBlockReason =
       'The published artist field contains a date or a location, not an artist.';
   } else {
@@ -285,7 +330,7 @@ export function resolveMediaSessionMetadata(
     programme,
     artist,
     title,
-    album: sessionAlbum,
+    album: sessionAlbum ?? sessionTrack.album,
     qualifier,
     rawArtistField: artist,
     rawTitleField: song,

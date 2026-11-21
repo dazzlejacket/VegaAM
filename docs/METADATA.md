@@ -1,4 +1,4 @@
-# Metadata Acquisition and Provenance (VegaAM 3.2.4)
+# Metadata Acquisition and Provenance (VegaAM 3.2.5)
 
 In VegaAM, all DOM scraping and page-header corroboration have been removed. Metadata is acquired exclusively through an isolated, read-only preload (`src/preload/mediaBridge.ts`) that reads the standard W3C Media Session API (`navigator.mediaSession.metadata` and `navigator.mediaSession.playbackState`) published by the official SiriusXM web player.
 
@@ -21,6 +21,13 @@ The official SiriusXM web player publishes two combined fields in `navigator.med
 5. Marks date/location prefixes in the artist slot (`2/14/23 Houston, TX`) as non-artist metadata; if the user has configured an explicit channel→artist mapping for that station (e.g. `E Street Radio` → `Bruce Springsteen`), `normalizeMetadata` (`src/core/metadata/normalizer.ts`) supplies the artist (`evidence: "inferred"`, `source: "channel-fallback"`), keeps the concert date/location for display (`Badlands (February 14, 2023 – Houston, TX)`), and strips it from the submitted scrobble title (`Badlands`).
 6. Carries the album the player publishes (`navigator.mediaSession.metadata.album`) into the
    normalised track, so the submitted scrobble is tagged with it instead of album-less.
+7. Reads the **album-label form** (`src/core/metadata/albumLabel.ts`) some channels use.
+   SiriusXM publishes E Street Radio as `From "The Rising" - My City Of Ruins`: the
+   album stands where the artist would be. The label is an album, never an artist
+   credit — the artist comes from the user's channel mapping (`E Street Radio` →
+   `Bruce Springsteen`), the album is submitted with the track, and the text behind the
+   label is the song and is never split again. The album name has to be quoted, so a
+   song called *From Me To You* stays a song title.
 
 ## User corrections (`src/core/metadata/manualCorrections.ts`)
 
